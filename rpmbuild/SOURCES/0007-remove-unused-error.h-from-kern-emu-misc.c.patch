@@ -1,0 +1,39 @@
+From 904bd6b3cb12977def4f940e90aca3fe557c3bb5 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Sat, 28 Dec 2013 09:01:20 +0400
+Subject: [PATCH 007/152] remove unused error.h from kern/emu/misc.c
+
+Fixes compilation on mingw32, where include is apparently missing.
+---
+ ChangeLog                 | 5 +++++
+ grub-core/kern/emu/misc.c | 1 -
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index c33856e..0401f61 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,8 @@
++2013-12-28  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* grub-core/kern/emu/misc.c: Remove unused error.h; fixes compilation
++	on mingw.
++
+ 2013-12-28  Colin Watson  <cjwatson@ubuntu.com>
+ 
+ 	* NEWS: The cmosclean command in fact dates back to 1.99.  Remove
+diff --git a/grub-core/kern/emu/misc.c b/grub-core/kern/emu/misc.c
+index 43471b4..bb606da 100644
+--- a/grub-core/kern/emu/misc.c
++++ b/grub-core/kern/emu/misc.c
+@@ -20,7 +20,6 @@
+ #include <config.h>
+ 
+ #include <errno.h>
+-#include <error.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <stdint.h>
+-- 
+1.9.3
+

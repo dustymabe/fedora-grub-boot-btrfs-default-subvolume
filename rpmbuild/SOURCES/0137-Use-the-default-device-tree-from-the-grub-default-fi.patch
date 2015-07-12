@@ -1,0 +1,46 @@
+From 5f1ee8ff7170321250874116eb80cbec83cc70ab Mon Sep 17 00:00:00 2001
+From: Fedora Ninjas <grub2-owner@fedoraproject.org>
+Date: Wed, 12 Feb 2014 14:54:04 -0500
+Subject: [PATCH 137/152] Use the default device tree from the grub default
+ file
+
+instead of hardcoding a value.
+
+Signed-off-by: David A. Marlin <dmarlin@redhat.com>
+---
+ util/grub-mkconfig.in   | 3 ++-
+ util/grub.d/10_linux.in | 4 ++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/util/grub-mkconfig.in b/util/grub-mkconfig.in
+index b00f9e6..beb22de 100644
+--- a/util/grub-mkconfig.in
++++ b/util/grub-mkconfig.in
+@@ -224,7 +224,8 @@ export GRUB_DEFAULT \
+   GRUB_ENABLE_CRYPTODISK \
+   GRUB_BADRAM \
+   GRUB_OS_PROBER_SKIP_LIST \
+-  GRUB_DISABLE_SUBMENU
++  GRUB_DISABLE_SUBMENU \
++  GRUB_DEFAULT_DTB
+ 
+ if test "x${grub_cfg}" != "x"; then
+   rm -f "${grub_cfg}.new"
+diff --git a/util/grub.d/10_linux.in b/util/grub.d/10_linux.in
+index 2639511..6480cd6 100644
+--- a/util/grub.d/10_linux.in
++++ b/util/grub.d/10_linux.in
+@@ -228,8 +228,8 @@ while [ "x$list" != "x" ] ; do
+ 
+   fdt=
+   for i in "dtb-${version}" "dtb-${alt_version}"; do
+-    if test -e "${dirname}/${i}/apm-mustang.dtb" ; then
+-      fdt="${i}/apm-mustang.dtb"
++    if test -f "${dirname}/${i}/${GRUB_DEFAULT_DTB}" ; then
++      fdt="${i}/${GRUB_DEFAULT_DTB}"
+       break
+     fi
+   done
+-- 
+1.9.3
+

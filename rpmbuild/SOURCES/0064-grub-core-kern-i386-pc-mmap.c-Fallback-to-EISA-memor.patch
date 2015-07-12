@@ -1,0 +1,88 @@
+From 37e3b5e42930e8cd4e801e4203dc2fde335b4b10 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Fri, 28 Feb 2014 10:07:11 +0100
+Subject: [PATCH 064/152] 	* grub-core/kern/i386/pc/mmap.c: Fallback to
+ EISA memory map 	if E820 failed to return any regions.
+
+---
+ ChangeLog                     |  5 +++++
+ grub-core/kern/i386/pc/mmap.c | 40 +++++++++++++++++++++-------------------
+ 2 files changed, 26 insertions(+), 19 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 6ed6cf4..97cf57e 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* grub-core/kern/i386/pc/mmap.c: Fallback to EISA memory map
++	if E820 failed to return any regions.
++
++2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* grub-core/mmap/i386/uppermem.c (lower_hook) [COREBOOT]: Ignore low
+ 	tables for low memory calculations.
+ 
+diff --git a/grub-core/kern/i386/pc/mmap.c b/grub-core/kern/i386/pc/mmap.c
+index 8009e83..f1375f3 100644
+--- a/grub-core/kern/i386/pc/mmap.c
++++ b/grub-core/kern/i386/pc/mmap.c
+@@ -141,33 +141,35 @@ grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,
+ grub_err_t
+ grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
+ {
+-  grub_uint32_t cont;
++  grub_uint32_t cont = 0;
+   struct grub_machine_mmap_entry *entry
+     = (struct grub_machine_mmap_entry *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
++  int e820_works = 0;
+ 
+-  grub_memset (entry, 0, sizeof (entry));
++  while (1)
++    {
++      grub_memset (entry, 0, sizeof (entry));
+ 
+-  /* Check if grub_get_mmap_entry works.  */
+-  cont = grub_get_mmap_entry (entry, 0);
++      cont = grub_get_mmap_entry (entry, cont);
+ 
+-  if (entry->size)
+-    do
+-      {
+-	if (hook (entry->addr, entry->len,
+-		  /* GRUB mmaps have been defined to match with the E820 definition.
+-		     Therefore, we can just pass type through.  */
+-		  entry->type, hook_data))
+-	  break;
++      if (!entry->size)
++	break;
+ 
+-	if (! cont)
+-	  break;
++      if (entry->len)
++	e820_works = 1;
++      if (entry->len
++	  && hook (entry->addr, entry->len,
++		   /* GRUB mmaps have been defined to match with
++		      the E820 definition.
++		      Therefore, we can just pass type through.  */
++		   entry->type, hook_data))
++	break;
+ 
+-	grub_memset (entry, 0, sizeof (entry));
++      if (! cont)
++	break;
++    }
+ 
+-	cont = grub_get_mmap_entry (entry, cont);
+-      }
+-    while (entry->size);
+-  else
++  if (!e820_works)
+     {
+       grub_uint32_t eisa_mmap = grub_get_eisa_mmap ();
+ 
+-- 
+1.9.3
+

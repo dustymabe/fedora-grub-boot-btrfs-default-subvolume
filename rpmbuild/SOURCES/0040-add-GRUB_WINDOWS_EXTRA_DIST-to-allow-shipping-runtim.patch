@@ -1,0 +1,62 @@
+From 6e9483ee94033f4bb7b9a17bd032c4af4479abc0 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Tue, 21 Jan 2014 20:54:09 +0400
+Subject: [PATCH 040/152] add GRUB_WINDOWS_EXTRA_DIST to allow shipping runtime
+ files
+
+Not all toolkits provide static libraries. This patch enables creation of self
+contained distribution that does not require pre-existing runtime libraries.
+Intended usage is
+
+export GRUB_WINDOWS_EXTRA_DIST="/path/to/liblzma.dll /path/to/libintl.dll"
+make
+make windowszip
+
+As those libraries and locations are dependent on toolchain in use, trying
+to autodetect them is likely impossible. So just provide a simple way to
+package everything in one step.
+
+Also remove $(windowsdir) after ZIP was created same as other "make dist"
+targets.
+---
+ ChangeLog   | 5 +++++
+ Makefile.am | 4 ++++
+ 2 files changed, 9 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index 3ba57ae..1ede370 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-01-21  Andrey Borzenkov <arvidjaar@gmail.com>
+ 
++	* Makefile.am: Allow adding extra files to generated Windows ZIP
++	archive by setting GRUB_WINDOWS_EXTRA_DIST.
++
++2014-01-21  Andrey Borzenkov <arvidjaar@gmail.com>
++
+ 	* configure.ac: Look for DejaVuSans also in /usr/share/fonts/truetype.
+ 	Show detected font path in summary.
+ 
+diff --git a/Makefile.am b/Makefile.am
+index 97c062d..f02ae0a 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -420,10 +420,14 @@ windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)
+ 	for x in $(starfield_DATA); do \
+ 		cp -fp $$x $(windowsdir)/themes/starfield/$$(basename $$x); \
+ 	done
++	for x in $(GRUB_WINDOWS_EXTRA_DIST); do \
++		cp -fp $$x $(windowsdir); \
++	done
+ 
+ windowszip=$(top_builddir)/$(PACKAGE)-$(VERSION)-for-windows.zip
+ windowszip: windowsdir
+ 	test -f $(windowszip) && rm $(windowszip) || true
+ 	zip -r $(windowszip) $(windowsdir)
++	rm -rf $(windowsdir)
+ 
+ EXTRA_DIST += linguas.sh
+-- 
+1.9.3
+

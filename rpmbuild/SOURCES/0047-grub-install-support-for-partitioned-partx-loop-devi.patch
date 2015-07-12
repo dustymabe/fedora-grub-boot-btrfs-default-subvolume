@@ -1,0 +1,55 @@
+From c889057e089d69bd187c8ba134c9669247744628 Mon Sep 17 00:00:00 2001
+From: Mike Gilbert <floppym@gentoo.org>
+Date: Sun, 26 Jan 2014 02:56:04 +0100
+Subject: [PATCH 047/152] 	grub-install: support for partitioned partx
+ loop devices.
+
+	* grub-core/osdep/linux/getroot.c (grub_util_part_to_disk): Detect
+	/dev/loopX as being the parent of /dev/loopXpY.
+---
+ ChangeLog                       |  7 +++++++
+ grub-core/osdep/linux/getroot.c | 13 +++++++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index 67b4d5c..bbec1e7 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,10 @@
++2014-01-26  Mike Gilbert <floppym@gentoo.org>
++
++	grub-install: support for partitioned partx loop devices.
++
++	* grub-core/osdep/linux/getroot.c (grub_util_part_to_disk): Detect
++	/dev/loopX as being the parent of /dev/loopXpY.
++
+ 2014-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* grub-core/term/serial.c (grub_serial_register): Fix invalid free.
+diff --git a/grub-core/osdep/linux/getroot.c b/grub-core/osdep/linux/getroot.c
+index 772de0a..19581d3 100644
+--- a/grub-core/osdep/linux/getroot.c
++++ b/grub-core/osdep/linux/getroot.c
+@@ -883,6 +883,19 @@ grub_util_part_to_disk (const char *os_dev, struct stat *st,
+ 	  *pp = '\0';
+ 	  return path;
+ 	}
++
++      /* If this is a loop device */
++      if ((strncmp ("loop", p, 4) == 0) && p[4] >= '0' && p[4] <= '9')
++	{
++	  char *pp = p + 4;
++	  while (*pp >= '0' && *pp <= '9')
++	    pp++;
++	  if (*pp == 'p')
++	    *is_part = 1;
++	  /* /dev/loop[0-9]+p[0-9]* */
++	  *pp = '\0';
++	  return path;
++	}
+     }
+ 
+   return path;
+-- 
+1.9.3
+

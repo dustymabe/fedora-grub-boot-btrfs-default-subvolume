@@ -1,0 +1,72 @@
+From 3be166827cecb977ad47ac4d3d89ec92688307a4 Mon Sep 17 00:00:00 2001
+From: Stephane Rochoy <sheda>
+Date: Sun, 22 Jun 2014 01:35:52 +0200
+Subject: [PATCH 085/152] 	* grub-core/loader/i386/bsd.c
+ (grub_netbsd_boot): Pass pointer to 	EFI system table.
+
+---
+ ChangeLog                           | 5 +++++
+ grub-core/loader/i386/bsd.c         | 8 ++++++++
+ include/grub/i386/netbsd_bootinfo.h | 7 +++++++
+ 3 files changed, 20 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index abf8f4b..0cdd095 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-06-21  Stephane Rochoy <sheda>
+ 
++	* grub-core/loader/i386/bsd.c (grub_netbsd_boot): Pass pointer to
++	EFI system table.
++
++2014-06-21  Stephane Rochoy <sheda>
++
+ 	* grub-core/commands/efi/lsefisystab.c (grub_cmd_lsefisystab): Show
+ 	EFI system table physical address.
+ 
+diff --git a/grub-core/loader/i386/bsd.c b/grub-core/loader/i386/bsd.c
+index 41ef910..8f691e0 100644
+--- a/grub-core/loader/i386/bsd.c
++++ b/grub-core/loader/i386/bsd.c
+@@ -1145,6 +1145,14 @@ grub_netbsd_boot (void)
+   if (err)
+     return err;
+ 
++#ifdef GRUB_MACHINE_EFI
++  err = grub_bsd_add_meta (NETBSD_BTINFO_EFI,
++			   &grub_efi_system_table,
++			   sizeof (grub_efi_system_table));
++  if (err)
++    return err;
++#endif
++
+   {
+     struct bsd_tag *tag;
+     tag_buf_len = 0;
+diff --git a/include/grub/i386/netbsd_bootinfo.h b/include/grub/i386/netbsd_bootinfo.h
+index e48c19b..9b4f460 100644
+--- a/include/grub/i386/netbsd_bootinfo.h
++++ b/include/grub/i386/netbsd_bootinfo.h
+@@ -58,6 +58,8 @@
+ #define NETBSD_BTINFO_BOOTWEDGE		10
+ #define NETBSD_BTINFO_MODULES		11
+ #define NETBSD_BTINFO_FRAMEBUF		12
++#define NETBSD_BTINFO_USERCONFCOMMANDS  13
++#define NETBSD_BTINFO_EFI	        14
+ 
+ struct grub_netbsd_bootinfo
+ {
+@@ -146,4 +148,9 @@ struct grub_netbsd_btinfo_framebuf
+ 
+ #define GRUB_NETBSD_MAX_ROOTDEVICE_LEN 16
+ 
++struct grub_netbsd_btinfo_efi
++{
++  void *pa_systbl;  /* Physical address of the EFI System Table */
++};
++
+ #endif
+-- 
+1.9.3
+

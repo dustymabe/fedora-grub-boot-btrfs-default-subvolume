@@ -1,0 +1,40 @@
+From d353b169aa6b2a9cd03d0c2987da7da059aa6f99 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Sat, 18 Jan 2014 20:02:51 +0100
+Subject: [PATCH 033/152] 	* util/grub-install.c: Fix a typo.
+
+---
+ ChangeLog           | 4 ++++
+ util/grub-install.c | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index c84f7e7..9360345 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,9 @@
+ 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* util/grub-install.c: Fix a typo.
++
++2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* grub-core/normal/main.c (read_config_file): Buffer config file.
+ 	Reduces boot time.
+ 
+diff --git a/util/grub-install.c b/util/grub-install.c
+index 4608b80..5903f34 100644
+--- a/util/grub-install.c
++++ b/util/grub-install.c
+@@ -1259,7 +1259,7 @@ main (int argc, char *argv[])
+ 
+   if (!config.is_cryptodisk_enabled && have_cryptodisk)
+     grub_util_error (_("attempt to install to encrypted disk without cryptodisk enabled. "
+-		       "Set `%s' in file `%s'."), "GRUB_ENABLE_CRYPTODISK=1",
++		       "Set `%s' in file `%s'."), "GRUB_ENABLE_CRYPTODISK=y",
+ 		     grub_util_get_config_filename ());
+ 
+   if (disk_module && grub_strcmp (disk_module, "ata") == 0)
+-- 
+1.9.3
+

@@ -1,0 +1,58 @@
+From 97fca4331e317b0491912c3cf3d02a9fac96c419 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@ubuntu.com>
+Date: Fri, 17 Jan 2014 02:28:46 +0000
+Subject: [PATCH 035/152] Ignore EPERM when modifying kern.geom.debugflags
+
+Many tests fail when run as a non-root user on FreeBSD.  The failures
+all amount to an inability to open files using grub_util_fd_open,
+because we cannot set the kern.geom.debugflags sysctl.  This sysctl is
+indeed important to allow us to do such things as installing GRUB to the
+MBR, but if we need to do that and can't then we will get an error
+later.  Enforcing it here is unnecessary and prevents otherwise
+perfectly reasonable operations.
+---
+ ChangeLog                          |  7 +++++++
+ grub-core/osdep/freebsd/hostdisk.c | 12 ++++++++++--
+ 2 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 4688ff4..10abfe2 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,10 @@
++2014-01-19  Colin Watson  <cjwatson@ubuntu.com>
++
++	* grub-core/osdep/freebsd/hostdisk.c (grub_util_fd_open): Ignore
++	EPERM when modifying kern.geom.debugflags.  It is only a problem for
++	such things as installing GRUB to the MBR, in which case there'll be
++	an error later anyway, not for opening files during tests.
++
+ 2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
+ 
+ 	* grub-core/Makefile.am: Build grub_emu_init.[ch] from MODULE_FILES
+diff --git a/grub-core/osdep/freebsd/hostdisk.c b/grub-core/osdep/freebsd/hostdisk.c
+index eb202dc..6145d07 100644
+--- a/grub-core/osdep/freebsd/hostdisk.c
++++ b/grub-core/osdep/freebsd/hostdisk.c
+@@ -102,8 +102,16 @@ grub_util_fd_open (const char *os_dev, int flags)
+   if (! (sysctl_oldflags & 0x10)
+       && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_flags, sysctl_size))
+     {
+-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags of sysctl kern.geom.debugflags");
+-      return GRUB_UTIL_FD_INVALID;
++      if (errno == EPERM)
++	/* Running as an unprivileged user; don't worry about restoring
++	   flags, although if we try to write to anything interesting such
++	   as the MBR then we may fail later.  */
++	sysctl_oldflags = 0x10;
++      else
++	{
++	  grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags of sysctl kern.geom.debugflags");
++	  return GRUB_UTIL_FD_INVALID;
++	}
+     }
+ 
+   ret = open (os_dev, flags, S_IROTH | S_IRGRP | S_IRUSR | S_IWUSR);
+-- 
+1.9.3
+

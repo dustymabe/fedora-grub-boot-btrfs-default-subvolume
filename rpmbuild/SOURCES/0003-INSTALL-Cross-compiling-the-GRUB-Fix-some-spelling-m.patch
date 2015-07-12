@@ -1,0 +1,88 @@
+From 8ebe593c564edc8ae62086df8a1448e898ef259b Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@ubuntu.com>
+Date: Fri, 27 Dec 2013 03:03:32 +0000
+Subject: [PATCH 003/152] * INSTALL (Cross-compiling the GRUB): Fix some
+ spelling mistakes. * docs/grub.texi (Getting the source code): Likewise.
+
+---
+ ChangeLog          |  5 +++++
+ INSTALL            | 10 +++++-----
+ docs/grub-dev.texi |  8 ++++----
+ 3 files changed, 14 insertions(+), 9 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 153bc43..bbb0f31 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,8 @@
++2013-12-27  Colin Watson  <cjwatson@ubuntu.com>
++
++	* INSTALL (Cross-compiling the GRUB): Fix some spelling mistakes.
++	* docs/grub.texi (Getting the source code): Likewise.
++
+ 2013-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* grub-core/kern/arm/cache_armv6.S: Remove .arch directive.
+diff --git a/INSTALL b/INSTALL
+index afc957c..db12530 100644
+--- a/INSTALL
++++ b/INSTALL
+@@ -140,7 +140,7 @@ If build and host are different make check isn't available.
+ If build and host are different man pages are not generated.
+ 
+ As an example imagine you have a build system running on FreeBSD on sparc
+-which prepares packages for developpers running amd64 GNU/Linux laptop and
++which prepares packages for developers running amd64 GNU/Linux laptop and
+ they need to make images for ARM board running U-boot. In this case:
+ 
+ build=sparc64-freebsd
+@@ -149,7 +149,7 @@ target=arm-uboot
+ 
+ For this example the configure line might look like (more details below)
+ (some options are optional and included here for completeness but some rarely
+-used options are omited):
++used options are omitted):
+ 
+ ./configure BUILD_CC=gcc BUILD_FREETYPE=freetype-config --host=amd64-linux-gnu
+ CC=amd64-linux-gnu-gcc CFLAGS="-g -O2" FREETYPE=amd64-linux-gnu-freetype-config
+@@ -196,9 +196,9 @@ corresponding platform are not needed for the platform in question.
+     11. TARGET_RANLIB= for ranlib for target.
+ 
+   - Additionally for emu, for host and target.
+-    1. SDL is looked for in stadard linker directories (-lSDL) (optional)
+-    2. libpciaccess is looked for in stadard linker directories (-lpciaccess) (optional)
+-    3. libusb is looked for in stadard linker directories (-lusb) (optional)
++    1. SDL is looked for in standard linker directories (-lSDL) (optional)
++    2. libpciaccess is looked for in standard linker directories (-lpciaccess) (optional)
++    3. libusb is looked for in standard linker directories (-lusb) (optional)
+ 
+   - Platform-agnostic tools and data.
+     1. make is the tool you execute after ./configure.
+diff --git a/docs/grub-dev.texi b/docs/grub-dev.texi
+index c796850..7c6244c 100644
+--- a/docs/grub-dev.texi
++++ b/docs/grub-dev.texi
+@@ -108,16 +108,16 @@ The branches available are:
+ 
+ @table @samp
+ @item master
+-      Main developpement branch.
++      Main development branch.
+ @item grub-legacy
+       GRUB 0.97 codebase. Kept for reference and legal reasons
+ @item multiboot
+       Multiboot specfication
+ @item multiboot2
+       Multiboot2 specfication
+-@item developper branches
+-      Prefixed with developper name. Every developper of a team manages his own branches.
+-      Developper branches do not need changelog entries.
++@item developer branches
++      Prefixed with developer name. Every developer of a team manages his own branches.
++      Developer branches do not need changelog entries.
+ @end table
+ 
+ Once you have used @kbd{git clone} to fetch an initial copy of a branch, you
+-- 
+1.9.3
+

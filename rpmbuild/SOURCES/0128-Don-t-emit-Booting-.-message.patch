@@ -1,0 +1,48 @@
+From 34f60bd4d04b142667c5fc0a4287b118834e71bb Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Tue, 18 Feb 2014 09:37:49 -0500
+Subject: [PATCH 128/152] Don't emit "Booting ..." message.
+
+UI team still hates this stuff, so we're disabling it for RHEL 7.
+
+Resolves: rhbz#1023142
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ grub-core/normal/menu.c       | 2 ++
+ grub-core/normal/menu_entry.c | 3 ---
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/grub-core/normal/menu.c b/grub-core/normal/menu.c
+index b47991a..cc27c37 100644
+--- a/grub-core/normal/menu.c
++++ b/grub-core/normal/menu.c
+@@ -810,9 +810,11 @@ static void
+ notify_booting (grub_menu_entry_t entry,
+ 		void *userdata __attribute__((unused)))
+ {
++#if 0
+   grub_printf ("  ");
+   grub_printf_ (N_("Booting `%s'"), entry->title);
+   grub_printf ("\n\n");
++#endif
+ }
+ 
+ /* Callback invoked when a default menu entry executed because of a timeout
+diff --git a/grub-core/normal/menu_entry.c b/grub-core/normal/menu_entry.c
+index b485df8..62e5db1 100644
+--- a/grub-core/normal/menu_entry.c
++++ b/grub-core/normal/menu_entry.c
+@@ -1156,9 +1156,6 @@ run (struct screen *screen)
+   char *dummy[1] = { NULL };
+ 
+   grub_cls ();
+-  grub_printf ("  ");
+-  grub_printf_ (N_("Booting a command list"));
+-  grub_printf ("\n\n");
+ 
+   errs_before = grub_err_printed_errors;
+ 
+-- 
+1.9.3
+

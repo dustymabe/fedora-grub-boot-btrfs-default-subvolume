@@ -1,0 +1,134 @@
+From 3cb3d2a07b11c95b3f8a908ae9d43eabef4dcf62 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 17 Sep 2014 15:13:14 -0500
+Subject: [PATCH 151/152] Initialized initrd_ctx so we don't free a random
+ pointer from the stack.
+
+Currently, if "linux" fails, the "goto fail;" in grub_cmd_initrd sends us
+into grub_initrd_close() without grub_initrd_init() being called, and thus
+it never clears initrd_ctx->components.  grub_initrd_close() then frees that
+address, which is stale data from the stack.  If the stack happens to have a
+stale *address* there that matches a recent allocation, then you'll get a
+double free later.
+
+So initialize the memory up front.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ grub-core/loader/arm/linux.c              | 2 +-
+ grub-core/loader/arm64/linux.c            | 2 +-
+ grub-core/loader/i386/linux.c             | 2 +-
+ grub-core/loader/i386/pc/linux.c          | 2 +-
+ grub-core/loader/ia64/efi/linux.c         | 2 +-
+ grub-core/loader/mips/linux.c             | 2 +-
+ grub-core/loader/powerpc/ieee1275/linux.c | 2 +-
+ grub-core/loader/sparc64/ieee1275/linux.c | 2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/grub-core/loader/arm/linux.c b/grub-core/loader/arm/linux.c
+index e6770d9..62cbe75 100644
+--- a/grub-core/loader/arm/linux.c
++++ b/grub-core/loader/arm/linux.c
+@@ -396,7 +396,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+ {
+   grub_file_t file;
+   grub_size_t size = 0;
+-  struct grub_linux_initrd_context initrd_ctx;
++  struct grub_linux_initrd_context initrd_ctx = { 0, };
+ 
+   if (argc == 0)
+     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
+diff --git a/grub-core/loader/arm64/linux.c b/grub-core/loader/arm64/linux.c
+index f1d10a1..0dc144e 100644
+--- a/grub-core/loader/arm64/linux.c
++++ b/grub-core/loader/arm64/linux.c
+@@ -328,7 +328,7 @@ static grub_err_t
+ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+ 		 int argc, char *argv[])
+ {
+-  struct grub_linux_initrd_context initrd_ctx;
++  struct grub_linux_initrd_context initrd_ctx = { 0, };
+   int initrd_size, initrd_pages;
+   void *initrd_mem = NULL;
+ 
+diff --git a/grub-core/loader/i386/linux.c b/grub-core/loader/i386/linux.c
+index 31fb91e..2ae1763 100644
+--- a/grub-core/loader/i386/linux.c
++++ b/grub-core/loader/i386/linux.c
+@@ -1050,7 +1050,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+   grub_addr_t addr_min, addr_max;
+   grub_addr_t addr;
+   grub_err_t err;
+-  struct grub_linux_initrd_context initrd_ctx;
++  struct grub_linux_initrd_context initrd_ctx = { 0, };
+ 
+   if (argc == 0)
+     {
+diff --git a/grub-core/loader/i386/pc/linux.c b/grub-core/loader/i386/pc/linux.c
+index 672c013..b481e46 100644
+--- a/grub-core/loader/i386/pc/linux.c
++++ b/grub-core/loader/i386/pc/linux.c
+@@ -388,7 +388,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+   grub_uint8_t *initrd_chunk;
+   grub_addr_t initrd_addr;
+   grub_err_t err;
+-  struct grub_linux_initrd_context initrd_ctx;
++  struct grub_linux_initrd_context initrd_ctx = { 0, };
+ 
+   if (argc == 0)
+     {
+diff --git a/grub-core/loader/ia64/efi/linux.c b/grub-core/loader/ia64/efi/linux.c
+index 87ac49f..eb78e6e 100644
+--- a/grub-core/loader/ia64/efi/linux.c
++++ b/grub-core/loader/ia64/efi/linux.c
+@@ -568,7 +568,7 @@ static grub_err_t
+ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+ 		 int argc, char *argv[])
+ {
+-  struct grub_linux_initrd_context initrd_ctx;
++  struct grub_linux_initrd_context initrd_ctx = { 0, };
+ 
+   if (argc == 0)
+     {
+diff --git a/grub-core/loader/mips/linux.c b/grub-core/loader/mips/linux.c
+index ef64a5b..4a3e8c5 100644
+--- a/grub-core/loader/mips/linux.c
++++ b/grub-core/loader/mips/linux.c
+@@ -415,7 +415,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+   void *initrd_src;
+   grub_addr_t initrd_dest;
+   grub_err_t err;
+-  struct grub_linux_initrd_context initrd_ctx;
++  struct grub_linux_initrd_context initrd_ctx = { 0, };
+ 
+   if (argc == 0)
+     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
+diff --git a/grub-core/loader/powerpc/ieee1275/linux.c b/grub-core/loader/powerpc/ieee1275/linux.c
+index 4a14f66..787d7dc 100644
+--- a/grub-core/loader/powerpc/ieee1275/linux.c
++++ b/grub-core/loader/powerpc/ieee1275/linux.c
+@@ -333,7 +333,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+   grub_size_t size = 0;
+   grub_addr_t first_addr;
+   grub_addr_t addr;
+-  struct grub_linux_initrd_context initrd_ctx;
++  struct grub_linux_initrd_context initrd_ctx = { 0, };
+ 
+   if (argc == 0)
+     {
+diff --git a/grub-core/loader/sparc64/ieee1275/linux.c b/grub-core/loader/sparc64/ieee1275/linux.c
+index de6ee2f..c5e8dfa 100644
+--- a/grub-core/loader/sparc64/ieee1275/linux.c
++++ b/grub-core/loader/sparc64/ieee1275/linux.c
+@@ -373,7 +373,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+   grub_addr_t paddr;
+   grub_addr_t addr;
+   int ret;
+-  struct grub_linux_initrd_context initrd_ctx;
++  struct grub_linux_initrd_context initrd_ctx = { 0, };
+ 
+   if (argc == 0)
+     {
+-- 
+1.9.3
+

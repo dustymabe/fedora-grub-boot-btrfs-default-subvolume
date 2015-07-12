@@ -1,0 +1,39 @@
+From 90d83cda679fef485f7bb1a318bd682c4eb86cb4 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Tue, 21 Jan 2014 19:29:33 +0400
+Subject: [PATCH 038/152] look for DejaVu also in /usr/share/fonts/truetype
+
+It is installed in this path on openSUSE.
+---
+ ChangeLog    | 4 ++++
+ configure.ac | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index f5618a6..9f5d81d 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2014-01-21  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* configure.ac: Look for DejaVuSans also in /usr/share/fonts/truetype.
++
+ 2014-01-21  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+ 
+ 	* grub-core/net/arp.c (grub_net_arp_send_request): Increase network try
+diff --git a/configure.ac b/configure.ac
+index cf3de3b..120263e 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1389,7 +1389,7 @@ fi
+ 
+ if test x"$starfield_excuse" = x; then
+    for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
+-     for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/truetype/ttf-dejavu /usr/share/fonts/dejavu; do
++     for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/truetype/ttf-dejavu /usr/share/fonts/dejavu /usr/share/fonts/truetype; do
+         if test -f "$dir/DejaVuSans.$ext"; then
+           DJVU_FONT_SOURCE="$dir/DejaVuSans.$ext"
+           break 2
+-- 
+1.9.3
+

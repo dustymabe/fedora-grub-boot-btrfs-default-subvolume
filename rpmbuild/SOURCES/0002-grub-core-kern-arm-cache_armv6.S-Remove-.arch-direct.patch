@@ -1,0 +1,43 @@
+From 5bda44d7f98c36f87144869ec58b518f80a69b56 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Wed, 25 Dec 2013 23:31:42 +0100
+Subject: [PATCH 002/152] 	* grub-core/kern/arm/cache_armv6.S: Remove
+ .arch directive.
+
+	As these functions are used on pre-ARMv6 CPUs as well we don't want
+	to make assembler assume that architecture is higher than default one.
+---
+ ChangeLog                        | 7 +++++++
+ grub-core/kern/arm/cache_armv6.S | 1 -
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 21ec1c7..153bc43 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,10 @@
++2013-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* grub-core/kern/arm/cache_armv6.S: Remove .arch directive.
++
++	As these functions are used on pre-ARMv6 CPUs as well we don't want
++	to make assembler assume that architecture is higher than default one.
++
+ 2013-12-25  Andrey Borzenkov <arvidjaar@gmail.com>
+ 
+ 	* grub-core/osdep/windows/platform.c (get_platform): Fix EFI
+diff --git a/grub-core/kern/arm/cache_armv6.S b/grub-core/kern/arm/cache_armv6.S
+index 39da1df..dfaded0 100644
+--- a/grub-core/kern/arm/cache_armv6.S
++++ b/grub-core/kern/arm/cache_armv6.S
+@@ -22,7 +22,6 @@
+ 	.text
+ 	.syntax	unified
+ 	.arm
+-	.arch	armv6
+ 
+ # define DMB	mcr	p15, 0, r0, c7, c10, 5
+ # define DSB	mcr	p15, 0, r0, c7, c10, 4
+-- 
+1.9.3
+

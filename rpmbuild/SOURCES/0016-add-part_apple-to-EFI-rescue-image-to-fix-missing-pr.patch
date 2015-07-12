@@ -1,0 +1,48 @@
+From 3aea6cc46177a90056ba60381e6387377fe40c99 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Sun, 12 Jan 2014 15:29:21 +0400
+Subject: [PATCH 016/152] add part_apple to EFI rescue image to fix missing
+ prefix
+
+On Mac rescue image is booted from HFS+ partition, so bootpath looks like
+/ACPI(a0341d0,0)/PCI(1,1f)/ATAPI(0,0,0)/HD(3,5d1,ca3,0000000000000000,20,0)/EndEntire
+
+grub fails to find device for this path because it cannot scan partition
+table. The simplest fix is to add part_apple by default.
+---
+ util/grub-mkrescue.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/util/grub-mkrescue.c b/util/grub-mkrescue.c
+index 0d03e55..34e0b7a 100644
+--- a/util/grub-mkrescue.c
++++ b/util/grub-mkrescue.c
+@@ -653,11 +653,15 @@ main (int argc, char *argv[])
+       make_image_fwdisk_abs (GRUB_INSTALL_PLATFORM_IA64_EFI, "ia64-efi", imgname);
+       free (imgname);
+ 
++      grub_install_push_module ("part_apple");
+       img64 = grub_util_path_concat (2, efidir_efi_boot, "bootx64.efi");
+       make_image_fwdisk_abs (GRUB_INSTALL_PLATFORM_X86_64_EFI, "x86_64-efi", img64);
++      grub_install_pop_module ();
+ 
++      grub_install_push_module ("part_apple");
+       img32 = grub_util_path_concat (2, efidir_efi_boot, "bootia32.efi");
+       make_image_fwdisk_abs (GRUB_INSTALL_PLATFORM_I386_EFI, "i386-efi", img32);
++      grub_install_pop_module ();
+ 
+       imgname = grub_util_path_concat (2, efidir_efi_boot, "bootarm.efi");
+       make_image_fwdisk_abs (GRUB_INSTALL_PLATFORM_ARM_EFI, "arm-efi", imgname);
+@@ -707,7 +711,9 @@ main (int argc, char *argv[])
+       free (efidir);
+     }
+ 
++  grub_install_push_module ("part_apple");
+   make_image_fwdisk (GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275, "powerpc-ieee1275", "powerpc-ieee1275/core.elf");
++  grub_install_pop_module ();
+ 
+   if (source_dirs[GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275])
+     {
+-- 
+1.9.3
+

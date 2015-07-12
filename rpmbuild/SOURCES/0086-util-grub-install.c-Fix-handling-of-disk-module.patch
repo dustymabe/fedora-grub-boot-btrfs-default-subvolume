@@ -1,0 +1,47 @@
+From d45ed8a6bf7c0c0abacb268da1f6d569743f16a0 Mon Sep 17 00:00:00 2001
+From: Glenn Washburn <development@efficientek.com>
+Date: Sun, 22 Jun 2014 01:45:11 +0200
+Subject: [PATCH 086/152] 	* util/grub-install.c: Fix handling of
+ --disk-module.
+
+---
+ ChangeLog           | 4 ++++
+ util/grub-install.c | 3 +--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 0cdd095..4ce6643 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2014-06-21  Glenn Washburn <development@efficientek.com>
++
++	* util/grub-install.c: Fix handling of --disk-module.
++
+ 2014-06-21  Stephane Rochoy <sheda>
+ 
+ 	* grub-core/loader/i386/bsd.c (grub_netbsd_boot): Pass pointer to
+diff --git a/util/grub-install.c b/util/grub-install.c
+index e9c6a46..7d61c32 100644
+--- a/util/grub-install.c
++++ b/util/grub-install.c
+@@ -94,7 +94,6 @@ enum
+     OPTION_RECHECK, 
+     OPTION_FORCE,
+     OPTION_FORCE_FILE_ID,
+-    OPTION_MODULE, 
+     OPTION_NO_NVRAM, 
+     OPTION_REMOVABLE, 
+     OPTION_BOOTLOADER_ID, 
+@@ -273,7 +272,7 @@ static struct argp_option options[] = {
+    N_("install even if problems are detected"), 2},
+   {"force-file-id", OPTION_FORCE_FILE_ID, 0, 0,
+    N_("use identifier file even if UUID is available"), 2},
+-  {"disk-module", OPTION_MODULE, N_("MODULE"), 0,
++  {"disk-module", OPTION_DISK_MODULE, N_("MODULE"), 0,
+    N_("disk module to use (biosdisk or native). "
+       "This option is only available on BIOS target."), 2},
+   {"no-nvram", OPTION_NO_NVRAM, 0, 0,
+-- 
+1.9.3
+

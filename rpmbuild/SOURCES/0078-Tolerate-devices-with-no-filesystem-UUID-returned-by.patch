@@ -1,0 +1,83 @@
+From 0942ce33c5b88d85a6b81f4b3dd75c32fdf21978 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@ubuntu.com>
+Date: Thu, 10 Apr 2014 16:54:33 +0100
+Subject: [PATCH 078/152] Tolerate devices with no filesystem UUID returned by
+ os-prober
+
+* util/grub.d/30_os-prober.in: Tolerate devices with no filesystem
+UUID.  Other parts of grub-mkconfig tolerate these, they were
+previously allowed here up to commit
+55e706c918922def17f5012c23cfe88c4c645208, and they can arise in
+practice when the system has active LVM snapshots.
+Fixes Ubuntu bug #1287436.
+---
+ ChangeLog                   |  9 +++++++++
+ util/grub.d/30_os-prober.in | 23 +++++++++++++----------
+ 2 files changed, 22 insertions(+), 10 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 7f0c57d..3556468 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,14 @@
+ 2014-04-10  Colin Watson  <cjwatson@ubuntu.com>
+ 
++	* util/grub.d/30_os-prober.in: Tolerate devices with no filesystem
++	UUID.  Other parts of grub-mkconfig tolerate these, they were
++	previously allowed here up to commit
++	55e706c918922def17f5012c23cfe88c4c645208, and they can arise in
++	practice when the system has active LVM snapshots.
++	Fixes Ubuntu bug #1287436.
++
++2014-04-10  Colin Watson  <cjwatson@ubuntu.com>
++
+ 	* grub-core/disk/lvm.c (grub_lvm_detect): Search for
+ 	"logical_volumes" block a little more accurately.
+ 
+diff --git a/util/grub.d/30_os-prober.in b/util/grub.d/30_os-prober.in
+index 7cf8487..6f38c82 100644
+--- a/util/grub.d/30_os-prober.in
++++ b/util/grub.d/30_os-prober.in
+@@ -112,16 +112,17 @@ for OS in ${OSPROBED} ; do
+   LONGNAME="`echo ${OS} | cut -d ':' -f 2 | tr '^' ' '`"
+   LABEL="`echo ${OS} | cut -d ':' -f 3 | tr '^' ' '`"
+   BOOT="`echo ${OS} | cut -d ':' -f 4`"
+-  UUID="`${grub_probe} --target=fs_uuid --device ${DEVICE%@*}`"
+-  EXPUUID="$UUID"
++  if UUID="`${grub_probe} --target=fs_uuid --device ${DEVICE%@*}`"; then
++    EXPUUID="$UUID"
+ 
+-  if [ x"${DEVICE#*@}" != x ] ; then
++    if [ x"${DEVICE#*@}" != x ] ; then
+       EXPUUID="${EXPUUID}@${DEVICE#*@}"
+-  fi
++    fi
+ 
+-  if [ "x${GRUB_OS_PROBER_SKIP_LIST}" != "x" ] && [ "x`echo ${GRUB_OS_PROBER_SKIP_LIST} | grep -i -e '\b'${EXPUUID}'\b'`" != "x" ] ; then
+-    echo "Skipped ${LONGNAME} on ${DEVICE} by user request." >&2
+-    continue
++    if [ "x${GRUB_OS_PROBER_SKIP_LIST}" != "x" ] && [ "x`echo ${GRUB_OS_PROBER_SKIP_LIST} | grep -i -e '\b'${EXPUUID}'\b'`" != "x" ] ; then
++      echo "Skipped ${LONGNAME} on ${DEVICE} by user request." >&2
++      continue
++    fi
+   fi
+ 
+   BTRFS="`echo ${OS} | cut -d ':' -f 5`"
+@@ -277,9 +278,11 @@ EOF
+       echo "$title_correction_code"
+     ;;
+     macosx)
+-      OSXUUID="${UUID}"
+-      osx_entry xnu_kernel 32
+-      osx_entry xnu_kernel64 64
++      if [ "${UUID}" ]; then
++	OSXUUID="${UUID}"
++	osx_entry xnu_kernel 32
++	osx_entry xnu_kernel64 64
++      fi
+     ;;
+     hurd)
+       onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
+-- 
+1.9.3
+

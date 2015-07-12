@@ -1,0 +1,47 @@
+From e85cc7078e669509d3a22c4e76f94cdd53335fff Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Fri, 28 Feb 2014 09:50:47 +0100
+Subject: [PATCH 063/152] 	* grub-core/mmap/i386/uppermem.c (lower_hook)
+ [COREBOOT]: Ignore low 	tables for low memory calculations.
+
+---
+ ChangeLog                      | 5 +++++
+ grub-core/mmap/i386/uppermem.c | 6 +++++-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index bbaed26..6ed6cf4 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* grub-core/mmap/i386/uppermem.c (lower_hook) [COREBOOT]: Ignore low
++	tables for low memory calculations.
++
++2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi): Limit
+ 	location to 640K.
+ 
+diff --git a/grub-core/mmap/i386/uppermem.c b/grub-core/mmap/i386/uppermem.c
+index bd8b429..a6be989 100644
+--- a/grub-core/mmap/i386/uppermem.c
++++ b/grub-core/mmap/i386/uppermem.c
+@@ -31,8 +31,12 @@ lower_hook (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
+ 
+   if (type != GRUB_MEMORY_AVAILABLE)
+     return 0;
++#ifdef GRUB_MACHINE_COREBOOT
++  if (addr <= 0x1000)
++#else
+   if (addr == 0)
+-    *lower = size;
++#endif
++    *lower = size + addr;
+   return 0;
+ }
+ 
+-- 
+1.9.3
+

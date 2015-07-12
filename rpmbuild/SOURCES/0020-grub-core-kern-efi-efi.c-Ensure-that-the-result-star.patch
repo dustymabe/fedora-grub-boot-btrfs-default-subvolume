@@ -1,0 +1,90 @@
+From 29c96f00677e1dd2a9df4de645a7f5fab7b736a1 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Sat, 18 Jan 2014 16:41:47 +0100
+Subject: [PATCH 020/152] 	* grub-core/kern/efi/efi.c: Ensure that the
+ result starts with / 	and has no //.
+
+---
+ ChangeLog                |  5 +++++
+ grub-core/kern/efi/efi.c | 25 +++++++++++++++++--------
+ 2 files changed, 22 insertions(+), 8 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 6a19f85..b04a4ef 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* grub-core/kern/efi/efi.c: Ensure that the result starts with /
++	and has no //.
++
++2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* NEWS: Add few missing entries.
+ 
+ 2014-01-17  Colin Watson  <cjwatson@ubuntu.com>
+diff --git a/grub-core/kern/efi/efi.c b/grub-core/kern/efi/efi.c
+index b253141..b9eb1ab 100644
+--- a/grub-core/kern/efi/efi.c
++++ b/grub-core/kern/efi/efi.c
+@@ -309,7 +309,7 @@ grub_efi_modules_addr (void)
+ char *
+ grub_efi_get_filename (grub_efi_device_path_t *dp0)
+ {
+-  char *name = 0, *p;
++  char *name = 0, *p, *pi;
+   grub_size_t filesize = 0;
+   grub_efi_device_path_t *dp;
+ 
+@@ -328,7 +328,7 @@ grub_efi_get_filename (grub_efi_device_path_t *dp0)
+ 	  grub_efi_uint16_t len;
+ 	  len = ((GRUB_EFI_DEVICE_PATH_LENGTH (dp) - 4)
+ 		 / sizeof (grub_efi_char16_t));
+-	  filesize += GRUB_MAX_UTF8_PER_UTF16 * len + 1;
++	  filesize += GRUB_MAX_UTF8_PER_UTF16 * len + 2;
+ 	}
+ 
+       dp = GRUB_EFI_NEXT_DEVICE_PATH (dp);
+@@ -356,12 +356,12 @@ grub_efi_get_filename (grub_efi_device_path_t *dp0)
+ 	  grub_efi_file_path_device_path_t *fp;
+ 	  grub_efi_uint16_t len;
+ 
+-	  if (p != name)
+-	    *p++ = '/';
++	  *p++ = '/';
+ 
+ 	  len = ((GRUB_EFI_DEVICE_PATH_LENGTH (dp) - 4)
+ 		 / sizeof (grub_efi_char16_t));
+ 	  fp = (grub_efi_file_path_device_path_t *) dp;
++
+ 	  p = (char *) grub_utf16_to_utf8 ((unsigned char *) p, fp->path_name, len);
+ 	}
+ 
+@@ -370,10 +370,19 @@ grub_efi_get_filename (grub_efi_device_path_t *dp0)
+ 
+   *p = '\0';
+ 
+-  /* EFI breaks paths with backslashes.  */
+-  for (p = name; *p; p++)
+-    if (*p == '\\')
+-      *p = '/';
++  for (pi = name, p = name; *pi;)
++    {
++      /* EFI breaks paths with backslashes.  */
++      if (*pi == '\\' || *pi == '/')
++	{
++	  *p++ = '/';
++	  while (*pi == '\\' || *pi == '/')
++	    pi++;
++	  continue;
++	}
++      *p++ = *pi++;
++    }
++  *p = '\0';
+ 
+   return name;
+ }
+-- 
+1.9.3
+

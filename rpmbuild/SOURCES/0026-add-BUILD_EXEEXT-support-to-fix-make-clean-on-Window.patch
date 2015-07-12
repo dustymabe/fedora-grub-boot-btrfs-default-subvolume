@@ -1,0 +1,174 @@
+From 5ac7afd762d11b4c91d5756222c3abf5862203de Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Sat, 18 Jan 2014 20:41:24 +0400
+Subject: [PATCH 026/152] add BUILD_EXEEXT support to fix make clean on Windows
+
+Add $(BUILD_EXEEXT) to ensure files are removed. Also add CLEANFILES where
+appropriate.
+---
+ ChangeLog             |  7 +++++++
+ Makefile.am           | 16 ++++++++--------
+ Makefile.util.def     |  2 +-
+ configure.ac          | 21 ++++++++++++++++-----
+ grub-core/Makefile.am | 14 ++++++++------
+ 5 files changed, 40 insertions(+), 20 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 5aac7c1..dad2da2 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,12 @@
+ 2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
+ 
++	* configure.ac: Add support for BUILD_EXEEXT and use it ...
++	* Makefile.am: ... here.
++	* Makefile.util.def: ... and here.
++	* grub-core/Makefile.am: ... and here.
++
++2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
++
+ 	* include/grub/osdep/hostfile_windows.h: Use _W64 instead of
+ 	FILE_OFFSET_BITS to differentiate between native MinGW and Mingw W64.
+ 
+diff --git a/Makefile.am b/Makefile.am
+index 1bbec0e..aa526f5 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -66,22 +66,22 @@ endif
+ 
+ starfield_theme_files = $(srcdir)/themes/starfield/blob_w.png $(srcdir)/themes/starfield/boot_menu_c.png $(srcdir)/themes/starfield/boot_menu_e.png $(srcdir)/themes/starfield/boot_menu_ne.png $(srcdir)/themes/starfield/boot_menu_n.png $(srcdir)/themes/starfield/boot_menu_nw.png $(srcdir)/themes/starfield/boot_menu_se.png $(srcdir)/themes/starfield/boot_menu_s.png $(srcdir)/themes/starfield/boot_menu_sw.png $(srcdir)/themes/starfield/boot_menu_w.png $(srcdir)/themes/starfield/slider_c.png $(srcdir)/themes/starfield/slider_n.png $(srcdir)/themes/starfield/slider_s.png $(srcdir)/themes/starfield/starfield.png $(srcdir)/themes/starfield/terminal_box_c.png $(srcdir)/themes/starfield/terminal_box_e.png $(srcdir)/themes/starfield/terminal_box_ne.png $(srcdir)/themes/starfield/terminal_box_n.png $(srcdir)/themes/starfield/terminal_box_nw.png $(srcdir)/themes/starfield/terminal_box_se.png $(srcdir)/themes/starfield/terminal_box_s.png $(srcdir)/themes/starfield/terminal_box_sw.png $(srcdir)/themes/starfield/terminal_box_w.png $(srcdir)/themes/starfield/theme.txt $(srcdir)/themes/starfield/README $(srcdir)/themes/starfield/COPYING.CC-BY-SA-3.0
+ 
+-build-grub-mkfont: util/grub-mkfont.c grub-core/unidata.c grub-core/kern/emu/misc.c util/misc.c
++build-grub-mkfont$(BUILD_EXEEXT): util/grub-mkfont.c grub-core/unidata.c grub-core/kern/emu/misc.c util/misc.c
+ 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 -DGRUB_BUILD_PROGRAM_NAME=\"build-grub-mkfont\" $^ $(build_freetype_cflags) $(build_freetype_libs)
+-CLEANFILES += build-grub-mkfont
++CLEANFILES += build-grub-mkfont$(BUILD_EXEEXT)
+ 
+-garbage-gen: util/garbage-gen.c
++garbage-gen$(BUILD_EXEEXT): util/garbage-gen.c
+ 	$(BUILD_CC) -o $@ $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS)  $^
+-CLEANFILES += garbage-gen
++CLEANFILES += garbage-gen$(BUILD_EXEEXT)
+ EXTRA_DIST += util/garbage-gen.c
+ 
+-build-grub-gen-asciih: util/grub-gen-asciih.c
++build-grub-gen-asciih$(BUILD_EXEEXT): util/grub-gen-asciih.c
+ 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror
+-CLEANFILES += build-grub-gen-asciih
++CLEANFILES += build-grub-gen-asciih$(BUILD_EXEEXT)
+ 
+-build-grub-gen-widthspec: util/grub-gen-widthspec.c
++build-grub-gen-widthspec$(BUILD_EXEEXT): util/grub-gen-widthspec.c
+ 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror
+-CLEANFILES += build-grub-gen-widthspec
++CLEANFILES += build-grub-gen-widthspec$(BUILD_EXEEXT)
+ 
+ if COND_STARFIELD
+ starfield_DATA = dejavu_10.pf2 dejavu_12.pf2 dejavu_bold_14.pf2 dejavu_14.pf2 dejavu_16.pf2 $(starfield_theme_files)
+diff --git a/Makefile.util.def b/Makefile.util.def
+index 3c99be2..83df212 100644
+--- a/Makefile.util.def
++++ b/Makefile.util.def
+@@ -708,7 +708,7 @@ script = {
+   name = grub-fs-tester;
+   common = tests/util/grub-fs-tester.in;
+   installdir = noinst;
+-  dependencies = garbage-gen;
++  dependencies = 'garbage-gen$(BUILD_EXEEXT)';
+ };
+ 
+ script = {
+diff --git a/configure.ac b/configure.ac
+index 2e4cf3c..cf3de3b 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -38,7 +38,8 @@ AC_CONFIG_AUX_DIR([build-aux])
+ # We don't want -g -O2 by default in CFLAGS
+ : ${CFLAGS=""}
+ 
+-# Checks for host and target systems.
++# Checks for build, host and target systems.
++AC_CANONICAL_BUILD
+ AC_CANONICAL_HOST
+ save_program_prefix="${program_prefix}"
+ AC_CANONICAL_TARGET
+@@ -422,6 +423,16 @@ case "$build_os" in
+   haiku*)				BUILD_LIBM= ;;
+   *) 					BUILD_LIBM=-lm ;;
+ esac
++
++dnl FIXME proper test seems to require too deep dive into Autoconf internals.
++dnl For now just list known platforms that we support.
++
++case "$build_os" in
++  cygwin*|mingw32*|mingw64*)		BUILD_EXEEXT=.exe ;;
++  *)					BUILD_EXEEXT= ;;
++esac
++AC_SUBST(BUILD_EXEEXT)
++
+ # For gnulib.
+ gl_INIT
+ 
+@@ -765,11 +776,11 @@ if test x"$platform" = xemu ; then
+     *windows* | *cygwin* | *mingw*)
+       if test x${target_cpu} = xi386 ; then
+         grub_cv_target_cc_link_format=-mi386pe;
+-	TARGET_OBJ2ELF='./build-grub-pe2elf';
++	TARGET_OBJ2ELF='./build-grub-pe2elf$(BUILD_EXEEXT)';
+       fi
+       if test x${target_cpu} = xx86_64 ; then
+         grub_cv_target_cc_link_format=-mi386pep;
+-	TARGET_OBJ2ELF='./build-grub-pep2elf';
++	TARGET_OBJ2ELF='./build-grub-pep2elf$(BUILD_EXEEXT)';
+       fi
+       TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
+       ;;
+@@ -803,10 +814,10 @@ elif test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
+   fi
+   TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
+   if test x"$grub_cv_target_cc_link_format" = x-mi386pe ; then
+-    TARGET_OBJ2ELF='./build-grub-pe2elf';
++    TARGET_OBJ2ELF='./build-grub-pe2elf$(BUILD_EXEEXT)';
+   fi
+   if test x"$grub_cv_target_cc_link_format" = x-mi386pep ; then
+-    TARGET_OBJ2ELF='./build-grub-pep2elf';
++    TARGET_OBJ2ELF='./build-grub-pep2elf$(BUILD_EXEEXT)';
+   fi
+ fi
+ 
+diff --git a/grub-core/Makefile.am b/grub-core/Makefile.am
+index 13b7979..826b3dd 100644
+--- a/grub-core/Makefile.am
++++ b/grub-core/Makefile.am
+@@ -26,20 +26,22 @@ CFLAGS_LIBRARY += $(CFLAGS_PLATFORM) -fno-builtin
+ CPPFLAGS_LIBRARY += $(CPPFLAGS_PLATFORM)
+ CCASFLAGS_LIBRARY += $(CCASFLAGS_PLATFORM)
+ 
+-build-grub-pep2elf: $(top_srcdir)/util/grub-pe2elf.c $(top_srcdir)/grub-core/kern/emu/misc.c $(top_srcdir)/util/misc.c
++build-grub-pep2elf$(BUILD_EXEEXT): $(top_srcdir)/util/grub-pe2elf.c $(top_srcdir)/grub-core/kern/emu/misc.c $(top_srcdir)/util/misc.c
+ 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_BUILD=1 -DGRUB_TARGET_WORDSIZE=64 -DGRUB_UTIL=1 -DGRUB_BUILD_PROGRAM_NAME=\"build-grub-pep2elf\" $^
++CLEANFILES += build-grub-pep2elf$(BUILD_EXEEXT)
+ 
+-build-grub-pe2elf: $(top_srcdir)/util/grub-pe2elf.c $(top_srcdir)/grub-core/kern/emu/misc.c $(top_srcdir)/util/misc.c
++build-grub-pe2elf$(BUILD_EXEEXT): $(top_srcdir)/util/grub-pe2elf.c $(top_srcdir)/grub-core/kern/emu/misc.c $(top_srcdir)/util/misc.c
+ 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_BUILD=1 -DGRUB_TARGET_WORDSIZE=32 -DGRUB_UTIL=1 -DGRUB_BUILD_PROGRAM_NAME=\"build-grub-pe2elf\" $^
++CLEANFILES += build-grub-pe2elf$(BUILD_EXEEXT)
+ 
+ # gentrigtables
+-gentrigtables: gentrigtables.c
++gentrigtables$(BUILD_EXEEXT): gentrigtables.c
+ 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) $< $(BUILD_LIBM)
+-CLEANFILES += gentrigtables
++CLEANFILES += gentrigtables$(BUILD_EXEEXT)
+ 
+ # trigtables.c
+-trigtables.c: gentrigtables gentrigtables.c $(top_srcdir)/configure.ac
+-	./gentrigtables > $@
++trigtables.c: gentrigtables$(BUILD_EXEEXT) gentrigtables.c $(top_srcdir)/configure.ac
++	./gentrigtables$(BUILD_EXEEXT) > $@
+ CLEANFILES += trigtables.c
+ 
+ # XXX Use Automake's LEX & YACC support
+-- 
+1.9.3
+

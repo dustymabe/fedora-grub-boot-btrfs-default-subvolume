@@ -1,0 +1,44 @@
+From 3365d3eb4062cee9581f3560ec3e93f8c8ababb2 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Mon, 3 Feb 2014 14:35:51 +0100
+Subject: [PATCH 057/152] 	* util/grub-mkrescue.c: Build fix for argp.h
+ with older gcc.
+
+---
+ ChangeLog            | 4 ++++
+ util/grub-mkrescue.c | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index f2bba84..f4a4721 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,9 @@
+ 2014-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* util/grub-mkrescue.c: Build fix for argp.h with older gcc.
++
++2014-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* util/grub-mkfont.c: Build fix for argp.h with older gcc.
+ 
+ 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+diff --git a/util/grub-mkrescue.c b/util/grub-mkrescue.c
+index 34e0b7a..e719839 100644
+--- a/util/grub-mkrescue.c
++++ b/util/grub-mkrescue.c
+@@ -25,7 +25,11 @@
+ #include <grub/emu/exec.h>
+ #include <grub/emu/config.h>
+ #include <grub/emu/hostdisk.h>
++#pragma GCC diagnostic ignored "-Wmissing-prototypes"
++#pragma GCC diagnostic ignored "-Wmissing-declarations"
+ #include <argp.h>
++#pragma GCC diagnostic error "-Wmissing-prototypes"
++#pragma GCC diagnostic error "-Wmissing-declarations"
+ 
+ #include <sys/types.h>
+ #include <sys/wait.h>
+-- 
+1.9.3
+

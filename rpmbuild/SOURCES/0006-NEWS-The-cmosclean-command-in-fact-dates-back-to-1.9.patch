@@ -1,0 +1,41 @@
+From 94763697f5f33614b7bd6da91707a27b6872b750 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@ubuntu.com>
+Date: Sat, 28 Dec 2013 02:20:27 +0000
+Subject: [PATCH 006/152] * NEWS: The cmosclean command in fact dates back to
+ 1.99.  Remove mention of it from 2.02.
+
+---
+ ChangeLog | 5 +++++
+ NEWS      | 3 +--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index da3c2df..c33856e 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,8 @@
++2013-12-28  Colin Watson  <cjwatson@ubuntu.com>
++
++	* NEWS: The cmosclean command in fact dates back to 1.99.  Remove
++	mention of it from 2.02.
++
+ 2013-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* grub-core/kern/arm/cache_armv6.S: Remove .arch directive.
+diff --git a/NEWS b/NEWS
+index 577d9fd..b74c05f 100644
+--- a/NEWS
++++ b/NEWS
+@@ -46,8 +46,7 @@ New in 2.02:
+ 
+ * New/improved platform support:
+   * New `efifwsetup' and `lsefi' commands on EFI platforms.
+-  * New `cmosclean', `cmosdump', and `cmosset' commands on platforms with
+-    CMOS support.
++  * New `cmosdump' and `cmosset' commands on platforms with CMOS support.
+   * New `cbmemc', `coreboot_boottime', and `lscoreboot' commands on
+     coreboot.
+   * Improve opcode parsing in ACPI halt implementation.
+-- 
+1.9.3
+

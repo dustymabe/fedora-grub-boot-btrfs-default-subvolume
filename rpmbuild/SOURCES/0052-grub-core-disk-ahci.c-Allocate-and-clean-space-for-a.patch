@@ -1,0 +1,55 @@
+From 50cb0018044359180aa57e6aa7ec944def83bbcc Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Wed, 29 Jan 2014 23:45:18 +0100
+Subject: [PATCH 052/152] 	* grub-core/disk/ahci.c: Allocate and clean
+ space for all possible 32 	slots to avoid pointing to uninited area.
+
+---
+ ChangeLog             | 5 +++++
+ grub-core/disk/ahci.c | 8 +++++++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 51eba95..9bb1817 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* grub-core/disk/ahci.c: Allocate and clean space for all possible 32
++	slots to avoid pointing to uninited area.
++
++2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* grub-core/disk/ahci.c: Do not enable I/O decoding and keep
+ 	enabling busmaster for the end.
+ 
+diff --git a/grub-core/disk/ahci.c b/grub-core/disk/ahci.c
+index 18c1327..d63fd09 100644
+--- a/grub-core/disk/ahci.c
++++ b/grub-core/disk/ahci.c
+@@ -358,7 +358,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
+ 	grub_dprintf ("ahci", "err: %x\n",
+ 		      adevs[i]->hba->ports[adevs[i]->port].sata_error);
+ 
+-	adevs[i]->command_list_chunk = grub_memalign_dma32 (1024, sizeof (struct grub_ahci_cmd_head));
++	adevs[i]->command_list_chunk = grub_memalign_dma32 (1024, sizeof (struct grub_ahci_cmd_head) * 32);
+ 	if (!adevs[i]->command_list_chunk)
+ 	  {
+ 	    adevs[i] = 0;
+@@ -376,6 +376,12 @@ grub_ahci_pciinit (grub_pci_device_t dev,
+ 
+ 	adevs[i]->command_list = grub_dma_get_virt (adevs[i]->command_list_chunk);
+ 	adevs[i]->command_table = grub_dma_get_virt (adevs[i]->command_table_chunk);
++
++	grub_memset ((void *) adevs[i]->command_list, 0,
++		     sizeof (struct grub_ahci_cmd_table));
++	grub_memset ((void *) adevs[i]->command_table, 0,
++		     sizeof (struct grub_ahci_cmd_head) * 32);
++
+ 	adevs[i]->command_list->command_table_base
+ 	  = grub_dma_get_phys (adevs[i]->command_table_chunk);
+ 
+-- 
+1.9.3
+

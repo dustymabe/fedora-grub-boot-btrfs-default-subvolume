@@ -1,0 +1,109 @@
+From 4ec08b960f6de1190dea9fe7e6ab3b4b249840e5 Mon Sep 17 00:00:00 2001
+From: Colin Watson <cjwatson@ubuntu.com>
+Date: Fri, 17 Jan 2014 15:24:50 +0000
+Subject: [PATCH 018/152] Prefer more portable test(1) constructs
+
+* util/grub.d/00_header.in (make_timeout): Use && rather than test
+-a.
+* util/grub.d/10_windows.in: Likewise.
+* util/grub.d/10_netbsd.in (netbsd_load_fs_module): Use || rather
+than test -o.
+* util/grub.d/30_os-prober.in: Use && rather than test -a, and ||
+rather than test -o.
+---
+ ChangeLog                   | 12 +++++++++++-
+ util/grub.d/00_header.in    |  2 +-
+ util/grub.d/10_netbsd.in    |  2 +-
+ util/grub.d/10_windows.in   |  4 ++--
+ util/grub.d/30_os-prober.in |  4 ++--
+ 5 files changed, 17 insertions(+), 7 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 6613b4e..c8e95a6 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,4 +1,14 @@
+-2014-01-17  Colin Watson  <cjwatson@debian.org>
++2014-01-17  Colin Watson  <cjwatson@ubuntu.com>
++
++	* util/grub.d/00_header.in (make_timeout): Use && rather than test
++	-a.
++	* util/grub.d/10_windows.in: Likewise.
++	* util/grub.d/10_netbsd.in (netbsd_load_fs_module): Use || rather
++	than test -o.
++	* util/grub.d/30_os-prober.in: Use && rather than test -a, and ||
++	rather than test -o.
++
++2014-01-17  Colin Watson  <cjwatson@ubuntu.com>
+ 
+ 	* grub-core/osdep/freebsd/hostdisk.c (grub_util_fd_open): Remove
+ 	redundant preprocessor conditional.
+diff --git a/util/grub.d/00_header.in b/util/grub.d/00_header.in
+index 0c82f23..ce2ec81 100644
+--- a/util/grub.d/00_header.in
++++ b/util/grub.d/00_header.in
+@@ -285,7 +285,7 @@ make_timeout ()
+     if [ "x${3}" != "x" ] ; then
+ 	timeout="${2}"
+ 	style="${3}"
+-    elif [ "x${1}" != "x" -a "x${1}" != "x0" ] ; then
++    elif [ "x${1}" != "x" ] && [ "x${1}" != "x0" ] ; then
+ 	# Handle the deprecated GRUB_HIDDEN_TIMEOUT scheme.
+ 	timeout="${1}"
+ 	if [ "x${2}" != "x0" ] ; then
+diff --git a/util/grub.d/10_netbsd.in b/util/grub.d/10_netbsd.in
+index 29a0e41..9988a42 100644
+--- a/util/grub.d/10_netbsd.in
++++ b/util/grub.d/10_netbsd.in
+@@ -69,7 +69,7 @@ netbsd_load_fs_module ()
+   kversion=$(zcat -f "${kernel}" | strings | sed -n -e '/^@(#)NetBSD/ { s/^@(#)NetBSD \([0-9\.]*\) .*$/\1/g ; p ; q ; }')
+   kmodule="/stand/${karch}/${kversion}/modules/${kmod}/${kmod}.kmod"
+ 
+-  if test -z "$karch" -o -z "$kversion" -o ! -f "${kmodule}"; then
++  if test -z "$karch" || test -z "$kversion" || test ! -f "${kmodule}"; then
+     return
+   fi
+ 
+diff --git a/util/grub.d/10_windows.in b/util/grub.d/10_windows.in
+index 9025914..48bd955 100644
+--- a/util/grub.d/10_windows.in
++++ b/util/grub.d/10_windows.in
+@@ -66,11 +66,11 @@ for drv in $drives ; do
+   osid=
+ 
+   # Check for Vista bootmgr.
+-  if [ -f "$dir"/bootmgr -a -f "$dir"/boot/bcd ] ; then
++  if [ -f "$dir"/bootmgr ] && [ -f "$dir"/boot/bcd ] ; then
+     OS="$(gettext "Windows Vista/7 (loader)")"
+     osid=bootmgr
+   # Check for NTLDR.
+-  elif [ -f "$dir"/ntldr -a -f "$dir"/ntdetect.com -a -f "$dir"/boot.ini ] ; then
++  elif [ -f "$dir"/ntldr ] && [ -f "$dir"/ntdetect.com ] && [ -f "$dir"/boot.ini ] ; then
+     OS=`get_os_name_from_boot_ini "$dir"/boot.ini` || OS="$(gettext "Windows NT/2000/XP (loader)")"
+     osid=ntldr
+     needmap=t
+diff --git a/util/grub.d/30_os-prober.in b/util/grub.d/30_os-prober.in
+index 0470e66..7cf8487 100644
+--- a/util/grub.d/30_os-prober.in
++++ b/util/grub.d/30_os-prober.in
+@@ -30,7 +30,7 @@ if [ "x${GRUB_DISABLE_OS_PROBER}" = "xtrue" ]; then
+   exit 0
+ fi
+ 
+-if [ -z "`which os-prober 2> /dev/null`" -o -z "`which linux-boot-prober 2> /dev/null`" ] ; then
++if [ -z "`which os-prober 2> /dev/null`" ] || [ -z "`which linux-boot-prober 2> /dev/null`" ] ; then
+   # missing os-prober and/or linux-boot-prober
+   exit 0
+ fi
+@@ -119,7 +119,7 @@ for OS in ${OSPROBED} ; do
+       EXPUUID="${EXPUUID}@${DEVICE#*@}"
+   fi
+ 
+-  if [ "x${GRUB_OS_PROBER_SKIP_LIST}" != "x" -a "x`echo ${GRUB_OS_PROBER_SKIP_LIST} | grep -i -e '\b'${EXPUUID}'\b'`" != "x" ] ; then
++  if [ "x${GRUB_OS_PROBER_SKIP_LIST}" != "x" ] && [ "x`echo ${GRUB_OS_PROBER_SKIP_LIST} | grep -i -e '\b'${EXPUUID}'\b'`" != "x" ] ; then
+     echo "Skipped ${LONGNAME} on ${DEVICE} by user request." >&2
+     continue
+   fi
+-- 
+1.9.3
+

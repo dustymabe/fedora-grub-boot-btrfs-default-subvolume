@@ -1,0 +1,109 @@
+From d25ddbcafa537525f606938df0e500c50a5e93e1 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Fri, 24 Jan 2014 18:09:25 +0100
+Subject: [PATCH 042/152] 	* util/grub-install.c: List available targets.
+
+---
+ ChangeLog                   |  4 ++++
+ include/grub/util/install.h |  2 ++
+ util/grub-install-common.c  | 30 ++++++++++++++++++++++++++++++
+ util/grub-install.c         | 10 ++++++++--
+ 4 files changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index eee8e78..20e8baa 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2014-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* util/grub-install.c: List available targets.
++
+ 2014-01-23  Colin Watson  <cjwatson@ubuntu.com>
+ 
+ 	* util/grub-install.c (write_to_disk): Add an info message.
+diff --git a/include/grub/util/install.h b/include/grub/util/install.h
+index bc987aa..aedcd29 100644
+--- a/include/grub/util/install.h
++++ b/include/grub/util/install.h
+@@ -138,6 +138,8 @@ grub_install_get_platform_cpu (enum grub_install_plat platid);
+ const char *
+ grub_install_get_platform_platform (enum grub_install_plat platid);
+ 
++char *
++grub_install_get_platforms_string (void);
+ 
+ typedef enum {
+   GRUB_COMPRESSION_AUTO,
+diff --git a/util/grub-install-common.c b/util/grub-install-common.c
+index 6ea0a8e..c8bedcb 100644
+--- a/util/grub-install-common.c
++++ b/util/grub-install-common.c
+@@ -668,6 +668,36 @@ static struct
+   }; 
+ 
+ char *
++grub_install_get_platforms_string (void)
++{
++  char **arr = xmalloc (sizeof (char *) * ARRAY_SIZE (platforms));
++  int platform_strins_len = 0;
++  char *platforms_string;
++  char *ptr;
++  unsigned i;
++  for (i = 0; i < ARRAY_SIZE (platforms); i++)
++    {
++      arr[i] = xasprintf ("%s-%s", platforms[i].cpu,
++			  platforms[i].platform);
++      platform_strins_len += strlen (arr[i]) + 2;
++    }
++  ptr = platforms_string = xmalloc (platform_strins_len);
++  qsort (arr, ARRAY_SIZE (platforms), sizeof (char *), grub_qsort_strcmp);
++  for (i = 0; i < ARRAY_SIZE (platforms); i++)
++    {
++      strcpy (ptr, arr[i]);
++      ptr += strlen (arr[i]);
++      *ptr++ = ',';
++      *ptr++ = ' ';
++      free (arr[i]);
++    }
++  ptr[-2] = 0;
++  free (arr);
++ 
++  return platforms_string;
++}
++
++char *
+ grub_install_get_platform_name (enum grub_install_plat platid)
+ {
+   return xasprintf ("%s-%s", platforms[platid].cpu,
+diff --git a/util/grub-install.c b/util/grub-install.c
+index 787dc90..2e6226a 100644
+--- a/util/grub-install.c
++++ b/util/grub-install.c
+@@ -256,7 +256,7 @@ static struct argp_option options[] = {
+    OPTION_HIDDEN, 0, 2},
+   {"target", OPTION_TARGET, N_("TARGET"),
+    /* TRANSLATORS: "TARGET" as in "target platform".  */
+-   0, N_("install GRUB for TARGET platform [default=%s]"), 2},
++   0, N_("install GRUB for TARGET platform [default=%s]; available targets: %s"), 2},
+   {"grub-setup", OPTION_SETUP, "FILE", OPTION_HIDDEN, 0, 2},
+   {"grub-mkrelpath", OPTION_MKRELPATH, "FILE", OPTION_HIDDEN, 0, 2},
+   {"grub-mkdevicemap", OPTION_MKDEVICEMAP, "FILE", OPTION_HIDDEN, 0, 2},
+@@ -340,7 +340,13 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
+     case OPTION_BOOT_DIRECTORY:
+       return xasprintf (text, GRUB_DIR_NAME, GRUB_BOOT_DIR_NAME "/" GRUB_DIR_NAME);
+     case OPTION_TARGET:
+-      return xasprintf (text, get_default_platform ());
++      {
++	char *plats = grub_install_get_platforms_string ();
++	char *ret;
++	ret = xasprintf (text, get_default_platform (), plats);
++	free (plats);
++	return ret;
++      }
+     case ARGP_KEY_HELP_POST_DOC:
+       return xasprintf (text, program_name, GRUB_BOOT_DIR_NAME "/" GRUB_DIR_NAME);
+     default:
+-- 
+1.9.3
+

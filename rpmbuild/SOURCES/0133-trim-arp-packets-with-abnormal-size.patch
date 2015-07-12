@@ -1,0 +1,31 @@
+From cf2e819b7059f199075b099260983e8108eea74a Mon Sep 17 00:00:00 2001
+From: Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>
+Date: Wed, 5 Feb 2014 09:42:42 -0200
+Subject: [PATCH 133/152] trim arp packets with abnormal size
+
+GRUB uses arp request to create the arp response. If the incoming packet
+is foobared, GRUB needs to trim the arp response packet before sending it.
+---
+ grub-core/net/arp.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/grub-core/net/arp.c b/grub-core/net/arp.c
+index d62d0cc..77581f4 100644
+--- a/grub-core/net/arp.c
++++ b/grub-core/net/arp.c
+@@ -162,6 +162,12 @@ grub_net_arp_receive (struct grub_net_buff *nb,
+     if (grub_net_addr_cmp (&inf->address, &target_addr) == 0
+ 	&& grub_be_to_cpu16 (arp_header->op) == ARP_REQUEST)
+       {
++        if ((nb->tail - nb->data) > 50)
++          {
++            grub_dprintf ("net", "arp packet with abnormal size (%ld bytes).\n",
++                         nb->tail - nb->data);
++            nb->tail = nb->data + 50;
++          }
+ 	grub_net_link_level_address_t target;
+ 	/* We've already checked that pln is either 4 or 16.  */
+ 	char tmp[16];
+-- 
+1.9.3
+

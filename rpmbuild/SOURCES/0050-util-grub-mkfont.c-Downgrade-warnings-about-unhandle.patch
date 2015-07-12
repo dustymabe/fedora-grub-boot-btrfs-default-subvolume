@@ -1,0 +1,77 @@
+From f21c40f33c95d908cee32a5063f285d22574a507 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Wed, 29 Jan 2014 23:41:48 +0100
+Subject: [PATCH 050/152] 	* util/grub-mkfont.c: Downgrade warnings about
+ unhandled features 	to debug.
+
+---
+ ChangeLog          |  9 +++++++++
+ util/grub-mkfont.c | 14 ++++++++------
+ 2 files changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index a49f5f1..9837c7f 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,12 @@
++2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* util/grub-mkfont.c: Downgrade warnings about unhandled features
++	to debug.
++
++2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* grub-core/term/at_keyboard.c: Tolerate missing keyboard.
++
+ 2014-01-29  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+ 
+ 	* .gitignore: add missing files and .exe variants.
+diff --git a/util/grub-mkfont.c b/util/grub-mkfont.c
+index 3cb02ad..3de07ee 100644
+--- a/util/grub-mkfont.c
++++ b/util/grub-mkfont.c
+@@ -516,8 +516,8 @@ process_cursive (struct gsub_feature *feature,
+ 	}		      
+       if (grub_be_to_cpu16 (lookup->flag) & ~GSUB_RTL_CHAR)
+ 	{
+-	  printf (_("Unsupported substitution flag: 0x%x\n"),
+-		  grub_be_to_cpu16 (lookup->flag));
++	  grub_util_info ("unsupported substitution flag: 0x%x",
++			  grub_be_to_cpu16 (lookup->flag));
+ 	}
+       switch (feattag)
+ 	{
+@@ -577,7 +577,8 @@ process_cursive (struct gsub_feature *feature,
+ 	       There are 2 coverage specifications: list and range.
+ 	       This warning is thrown when another coverage specification
+ 	       is detected.  */
+-	    printf (_("Unsupported coverage specification: %d\n"), covertype);
++	    fprintf (stderr,
++		     _("Unsupported coverage specification: %d\n"), covertype);
+ 	}
+     }
+ }
+@@ -616,7 +617,8 @@ add_font (struct grub_font_info *font_info, FT_Face face, int nocut)
+ 	  grub_uint32_t feattag
+ 	    = grub_be_to_cpu32 (features->features[i].feature_tag);
+ 	  if (feature->params)
+-	    printf (_("WARNING: unsupported font feature parameters: %x\n"),
++	    fprintf (stderr,
++		     _("WARNING: unsupported font feature parameters: %x\n"),
+ 		    grub_be_to_cpu16 (feature->params));
+ 	  switch (feattag)
+ 	    {
+@@ -647,8 +649,8 @@ add_font (struct grub_font_info *font_info, FT_Face face, int nocut)
+ 		  if (!grub_isgraph (str[j]))
+ 		    str[j] = '?';
+ 		/* TRANSLATORS: It's gsub feature, not gsub font.  */
+-		printf (_("Unknown gsub font feature 0x%x (%s)\n"),
+-			feattag, str);
++		grub_util_info ("Unknown gsub font feature 0x%x (%s)",
++				feattag, str);
+ 	      }
+ 	    }
+ 	}
+-- 
+1.9.3
+

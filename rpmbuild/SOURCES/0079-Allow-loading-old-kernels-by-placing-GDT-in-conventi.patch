@@ -1,0 +1,49 @@
+From 42c1756fd0ff7d94dcc8e9be2e429a2a976f6d41 Mon Sep 17 00:00:00 2001
+From: Piotr Krysiuk <piotras@gmail.com>
+Date: Sun, 20 Apr 2014 15:58:45 +0200
+Subject: [PATCH 079/152] Allow loading old kernels by placing GDT in
+ conventional memory.
+
+---
+ ChangeLog                      |  5 +++++
+ grub-core/lib/i386/relocator.c | 11 +++++++----
+ 2 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 3556468..73a8928 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,8 @@
++2014-04-20  Piotr Krysiuk  <piotras@gmail.com>
++
++	* grub-core/lib/i386/relocator.c: Allow loading old kernels by placing
++	GDT in conventional memory.
++
+ 2014-04-10  Colin Watson  <cjwatson@ubuntu.com>
+ 
+ 	* util/grub.d/30_os-prober.in: Tolerate devices with no filesystem
+diff --git a/grub-core/lib/i386/relocator.c b/grub-core/lib/i386/relocator.c
+index d2a1b27..ffaf25f 100644
+--- a/grub-core/lib/i386/relocator.c
++++ b/grub-core/lib/i386/relocator.c
+@@ -81,10 +81,13 @@ grub_relocator32_boot (struct grub_relocator *rel,
+   void *relst;
+   grub_relocator_chunk_t ch;
+ 
+-  err = grub_relocator_alloc_chunk_align (rel, &ch, 0,
+-					  (0xffffffff - RELOCATOR_SIZEOF (32))
+-					  + 1, RELOCATOR_SIZEOF (32), 16,
+-					  GRUB_RELOCATOR_PREFERENCE_NONE,
++  /* Specific memory range due to Global Descriptor Table for use by payload
++     that we will store in returned chunk.  The address range and preference
++     are based on "THE LINUX/x86 BOOT PROTOCOL" specification.  */
++  err = grub_relocator_alloc_chunk_align (rel, &ch, 0x1000,
++					  0x9a000 - RELOCATOR_SIZEOF (32),
++					  RELOCATOR_SIZEOF (32), 16,
++					  GRUB_RELOCATOR_PREFERENCE_LOW,
+ 					  avoid_efi_bootservices);
+   if (err)
+     return err;
+-- 
+1.9.3
+

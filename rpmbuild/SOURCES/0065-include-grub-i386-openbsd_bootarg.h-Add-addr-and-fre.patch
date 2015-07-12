@@ -1,0 +1,70 @@
+From 1cdf2c717c0f4a2efac0e5dc8b5c564f930c537a Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Fri, 28 Feb 2014 10:50:05 +0100
+Subject: [PATCH 065/152] 	* include/grub/i386/openbsd_bootarg.h: Add
+ addr and frequency fields. 	* grub-core/loader/i386/bsd.c
+ (grub_cmd_openbsd): Fill addr field.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+	Suggested by: Markus Müller.
+---
+ ChangeLog                           | 7 +++++++
+ grub-core/loader/i386/bsd.c         | 2 ++
+ include/grub/i386/openbsd_bootarg.h | 2 ++
+ 3 files changed, 11 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index 97cf57e..f571f66 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,12 @@
+ 2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* include/grub/i386/openbsd_bootarg.h: Add addr and frequency fields.
++	* grub-core/loader/i386/bsd.c (grub_cmd_openbsd): Fill addr field.
++
++	Suggested by: Markus Müller.
++
++2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* grub-core/kern/i386/pc/mmap.c: Fallback to EISA memory map
+ 	if E820 failed to return any regions.
+ 
+diff --git a/grub-core/loader/i386/bsd.c b/grub-core/loader/i386/bsd.c
+index ea0edfa..19985f0 100644
+--- a/grub-core/loader/i386/bsd.c
++++ b/grub-core/loader/i386/bsd.c
+@@ -1646,6 +1646,7 @@ grub_cmd_openbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
+ 
+       serial.device = (GRUB_OPENBSD_COM_MAJOR << 8) | port;
+       serial.speed = speed;
++      serial.addr = grub_ns8250_hw_get_port (port);
+ 	  
+       grub_bsd_add_meta (OPENBSD_BOOTARG_CONSOLE, &serial, sizeof (serial));
+       bootflags |= OPENBSD_RB_SERCONS;
+@@ -1656,6 +1657,7 @@ grub_cmd_openbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
+ 
+       grub_memset (&serial, 0, sizeof (serial));
+       serial.device = (GRUB_OPENBSD_VGA_MAJOR << 8);
++      serial.addr = 0xffffffff;
+       grub_bsd_add_meta (OPENBSD_BOOTARG_CONSOLE, &serial, sizeof (serial));
+       bootflags &= ~OPENBSD_RB_SERCONS;
+     }
+diff --git a/include/grub/i386/openbsd_bootarg.h b/include/grub/i386/openbsd_bootarg.h
+index 01ca486..9ebe6b4 100644
+--- a/include/grub/i386/openbsd_bootarg.h
++++ b/include/grub/i386/openbsd_bootarg.h
+@@ -75,6 +75,8 @@ struct grub_openbsd_bootarg_console
+ {
+   grub_uint32_t device;
+   grub_uint32_t speed;
++  grub_uint32_t addr;
++  grub_uint32_t frequency;
+ };
+ 
+ struct grub_openbsd_bootarg_pcibios
+-- 
+1.9.3
+

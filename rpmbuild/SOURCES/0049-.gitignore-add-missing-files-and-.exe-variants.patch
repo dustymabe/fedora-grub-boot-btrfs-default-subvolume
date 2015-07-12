@@ -1,0 +1,73 @@
+From 58ca3abc65a64d950d6da8b473e91f16d410f1ac Mon Sep 17 00:00:00 2001
+From: Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>
+Date: Wed, 29 Jan 2014 13:26:00 -0200
+Subject: [PATCH 049/152] .gitignore: add missing files and .exe variants.
+
+---
+ .gitignore | 7 +++++++
+ ChangeLog  | 6 +++++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/.gitignore b/.gitignore
+index 2b0156a..18ab8e8 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -58,6 +58,8 @@ grub-emu.exe
+ grub-emu-lite.exe
+ grub_emu_init.c
+ grub_emu_init.h
++/grub-file
++/grub-file.exe
+ grub-fstest
+ grub-fstest.exe
+ grub_fstest_init.c
+@@ -66,6 +68,8 @@ grub_func_test
+ grub-install
+ grub-install.exe
+ grub-kbdcomp
++/grub-macbless
++/grub-macbless.exe
+ grub-macho2img
+ /grub-menulst2cfg
+ /grub-menulst2cfg.exe
+@@ -120,6 +124,8 @@ grub-shell
+ grub-shell-tester
+ grub-sparc64-setup
+ grub-sparc64-setup.exe
++/grub-syslinux2cfg
++/grub-syslinux2cfg.exe
+ gzcompress_test
+ hddboot_test
+ help_test
+@@ -194,6 +200,7 @@ grub-core/modinfo.sh
+ grub-core/*.module
+ grub-core/*.module.exe
+ grub-core/*.pp
++grub-core/kernel.img.bin
+ util/bash-completion.d/grub
+ grub-core/gnulib/alloca.h
+ grub-core/gnulib/arg-nonnull.h
+diff --git a/ChangeLog b/ChangeLog
+index d37d4a6..a49f5f1 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2014-01-29  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
++
++	* .gitignore: add missing files and .exe variants.
++
+ 2014-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* grub-core/term/at_keyboard.c: Tolerate missing keyboard.
+@@ -1113,7 +1117,7 @@
+ 
+ 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+-	* .gitignore: Add .exe variants. Add missing files. Remove few outdated
++	* .gitignore: add .exe variants. add missing files. remove few outdated
+ 	entries.
+ 
+ 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+-- 
+1.9.3
+

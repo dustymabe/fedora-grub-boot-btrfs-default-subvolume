@@ -1,0 +1,55 @@
+From d0cf0d7dcd4813a168d2bd94ec77ee0ae8ff860e Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Sat, 18 Jan 2014 22:48:04 +0400
+Subject: [PATCH 031/152] fix removal of {cpu,machine} links on mingw/msys
+
+At least on Windows 2003 using "ln -s dir1 dir2" in msys shell succeeds,
+but results in what looks like hard link. Subsequent "rm -f dir2" (e.g.
+during second config.status invocation) fails. Check that we also can
+remove link to directory.
+
+Make it more clear in message that we are checking "ln -s".
+---
+ ChangeLog    | 5 +++++
+ acinclude.m4 | 6 +++---
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index cff9386..c3bfa9f 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,8 @@
++2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* acinclude.m4 (grub_CHECK_LINK_DIR): Check that we can also remove
++	symbolic link to directory. It fails in Msys shell on Windows 2003.
++
+ 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* Makefile.am (default_payload.elf): Add modules
+diff --git a/acinclude.m4 b/acinclude.m4
+index 32d5477..b2bb88d 100644
+--- a/acinclude.m4
++++ b/acinclude.m4
+@@ -418,15 +418,15 @@ else
+ [fi]
+ ])
+ 
+-dnl Check if ln can handle directories properly (mingw).
++dnl Check if ln -s can handle directories properly (mingw).
+ AC_DEFUN([grub_CHECK_LINK_DIR],[
+-AC_MSG_CHECKING([whether ln can handle directories properly])
++AC_MSG_CHECKING([whether ln -s can handle directories properly])
+ [mkdir testdir 2>/dev/null
+ case $srcdir in
+ [\\/$]* | ?:[\\/]* ) reldir=$srcdir/include/grub/util ;;
+     *) reldir=../$srcdir/include/grub/util ;;
+ esac
+-if ln -s $reldir testdir/util 2>/dev/null ; then]
++if ln -s $reldir testdir/util 2>/dev/null && rm -f testdir/util 2>/dev/null ; then]
+   AC_MSG_RESULT([yes])
+   [link_dir=yes
+ else
+-- 
+1.9.3
+

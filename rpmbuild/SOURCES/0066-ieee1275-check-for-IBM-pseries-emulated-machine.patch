@@ -1,0 +1,33 @@
+From 2a20b05871d51635060ab58c1b63ac2ee9f8a359 Mon Sep 17 00:00:00 2001
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+Date: Thu, 20 Mar 2014 16:57:12 +0530
+Subject: [PATCH 066/152] ieee1275: check for IBM pseries emulated machine
+
+is_qemu is not being set lead to disabling of feature like
+GRUB_IEEE1275_FLAG_HAS_CURSORONOFF. This resulted in cursor not being
+displayed during the grub-menu edit.
+
+Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+---
+ grub-core/kern/ieee1275/cmain.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/grub-core/kern/ieee1275/cmain.c b/grub-core/kern/ieee1275/cmain.c
+index d92ae14..3e12e6b 100644
+--- a/grub-core/kern/ieee1275/cmain.c
++++ b/grub-core/kern/ieee1275/cmain.c
+@@ -84,8 +84,10 @@ grub_ieee1275_find_options (void)
+ 
+   rc = grub_ieee1275_get_property (root, "model",
+ 				   tmp,	sizeof (tmp), 0);
+-  if (rc >= 0 && !grub_strcmp (tmp, "Emulated PC"))
++  if (rc >= 0 && (!grub_strcmp (tmp, "Emulated PC")
++		  || !grub_strcmp (tmp, "IBM pSeries (emulated by qemu)"))) {
+     is_qemu = 1;
++  }
+ 
+   if (rc >= 0 && grub_strncmp (tmp, "IBM", 3) == 0)
+     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS);
+-- 
+1.9.3
+

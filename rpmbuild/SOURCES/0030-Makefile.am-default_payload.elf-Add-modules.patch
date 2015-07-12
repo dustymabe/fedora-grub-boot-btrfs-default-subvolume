@@ -1,0 +1,42 @@
+From 3f6bd432acbf2244e6f4b83dd3a259392b10afb6 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Sat, 18 Jan 2014 19:43:19 +0100
+Subject: [PATCH 030/152] 	* Makefile.am (default_payload.elf): Add
+ modules 	multiboot cbmemc linux16 gzio echo help.
+
+---
+ ChangeLog   | 7 ++++++-
+ Makefile.am | 2 +-
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index edceb66..cff9386 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,4 +1,9 @@
+-2014-01-01  Mike Gilbert <floppym@gentoo.org>
++2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* Makefile.am (default_payload.elf): Add modules
++	multiboot cbmemc linux16 gzio echo help.
++
++2014-01-18  Mike Gilbert <floppym@gentoo.org>
+ 
+ 	* Makefile.util.def: Link grub-ofpathname with zfs libs.
+ 
+diff --git a/Makefile.am b/Makefile.am
+index aa526f5..97c062d 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -399,7 +399,7 @@ bootcheck: $(BOOTCHECKS)
+ 
+ if COND_i386_coreboot
+ default_payload.elf: grub-mkstandalone grub-mkimage
+-	pkgdatadir=. ./grub-mkstandalone --grub-mkimage=./grub-mkimage -O i386-coreboot -o $@ --modules='ahci pata ehci uhci ohci usb_keyboard usbms part_msdos xfs ext2 fat at_keyboard part_gpt usbserial_usbdebug cbfs' --install-modules='ls linux search configfile normal cbtime cbls memrw iorw minicmd lsmmap lspci halt reboot hexdump pcidump regexp setpci lsacpi chain test serial' --fonts= --themes= --locales= -d grub-core/ /boot/grub/grub.cfg=$(srcdir)/coreboot.cfg
++	pkgdatadir=. ./grub-mkstandalone --grub-mkimage=./grub-mkimage -O i386-coreboot -o $@ --modules='ahci pata ehci uhci ohci usb_keyboard usbms part_msdos xfs ext2 fat at_keyboard part_gpt usbserial_usbdebug cbfs' --install-modules='ls linux search configfile normal cbtime cbls memrw iorw minicmd lsmmap lspci halt reboot hexdump pcidump regexp setpci lsacpi chain test serial multiboot cbmemc linux16 gzio echo help' --fonts= --themes= --locales= -d grub-core/ /boot/grub/grub.cfg=$(srcdir)/coreboot.cfg
+ endif
+ 
+ windowsdir=$(top_builddir)/$(PACKAGE)-$(VERSION)-for-windows
+-- 
+1.9.3
+

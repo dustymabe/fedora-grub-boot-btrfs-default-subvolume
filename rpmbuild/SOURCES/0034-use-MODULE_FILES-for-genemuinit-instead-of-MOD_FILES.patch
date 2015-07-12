@@ -1,0 +1,91 @@
+From 85cc4b1abfed85fd8504da4acc391d5936de2812 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Sat, 18 Jan 2014 23:15:40 +0400
+Subject: [PATCH 034/152] use MODULE_FILES for genemuinit* instead of MOD_FILES
+
+MinGW native nm does not support ELF binaries.
+---
+ ChangeLog                     | 8 ++++++++
+ grub-core/Makefile.am         | 8 ++++----
+ grub-core/genemuinit.sh       | 4 ++--
+ grub-core/genemuinitheader.sh | 4 ++--
+ 4 files changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 9360345..4688ff4 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,11 @@
++2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* grub-core/Makefile.am: Build grub_emu_init.[ch] from MODULE_FILES
++	instead of MOD_FILES.
++	* grub-core/genemuinit.sh: Simplify stripping of suffix so it works
++	both with and without .exe.
++	* grub-core/genemuinitheader.sh: Same.
++
+ 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* util/grub-install.c: Fix a typo.
+diff --git a/grub-core/Makefile.am b/grub-core/Makefile.am
+index 826b3dd..5c087c8 100644
+--- a/grub-core/Makefile.am
++++ b/grub-core/Makefile.am
+@@ -294,12 +294,12 @@ grub_emu-grub_emu_init.$(OBJEXT):grub_emu_init.h
+ kern/emu/grub_emu_dyn-main.$(OBJEXT):grub_emu_init.h
+ grub_emu_dyn-grub_emu_init.$(OBJEXT):grub_emu_init.h
+ 
+-grub_emu_init.h: genemuinitheader.sh $(MOD_FILES)
+-	rm -f $@; echo $(MOD_FILES) | sh $(srcdir)/genemuinitheader.sh $(TARGET_NM) > $@
++grub_emu_init.h: genemuinitheader.sh $(MODULE_FILES)
++	rm -f $@; echo $(MODULE_FILES) | sh $(srcdir)/genemuinitheader.sh $(TARGET_NM) > $@
+ CLEANFILES += grub_emu_init.h
+ 
+-grub_emu_init.c: grub_emu_init.h genemuinit.sh $(MOD_FILES)
+-	rm -f $@; echo $(MOD_FILES) | sh $(srcdir)/genemuinit.sh $(TARGET_NM) > $@
++grub_emu_init.c: grub_emu_init.h genemuinit.sh $(MODULE_FILES)
++	rm -f $@; echo $(MODULE_FILES) | sh $(srcdir)/genemuinit.sh $(TARGET_NM) > $@
+ CLEANFILES += grub_emu_init.c
+ endif
+ 
+diff --git a/grub-core/genemuinit.sh b/grub-core/genemuinit.sh
+index 45c15ec..8c6bb1c 100644
+--- a/grub-core/genemuinit.sh
++++ b/grub-core/genemuinit.sh
+@@ -47,7 +47,7 @@ EOF
+ read mods
+ for line in $mods; do
+   if ${nm} --defined-only -P -p ${line} | grep grub_mod_init > /dev/null; then
+-      echo "grub_${line}_init ();" | sed 's,\.mod,,g;'
++      echo "grub_${line%%.*}_init ();"
+   fi
+ done
+ 
+@@ -63,7 +63,7 @@ EOF
+ 
+ for line in $mods; do
+   if ${nm} --defined-only -P -p ${line} | grep grub_mod_fini > /dev/null; then
+-      echo "grub_${line}_fini ();" | sed 's,\.mod,,g;'
++      echo "grub_${line%%.*}_fini ();"
+   fi
+ done
+ 
+diff --git a/grub-core/genemuinitheader.sh b/grub-core/genemuinitheader.sh
+index 6b83f59..a99a15d 100644
+--- a/grub-core/genemuinitheader.sh
++++ b/grub-core/genemuinitheader.sh
+@@ -44,9 +44,9 @@ EOF
+ read mods
+ for line in $mods; do
+   if ${nm} --defined-only -P -p ${line} | grep grub_mod_init > /dev/null; then
+-      echo "void grub_${line}_init (void);" | sed 's,\.mod,,g;'
++      echo "void grub_${line%%.*}_init (void);"
+   fi
+   if ${nm} --defined-only -P -p ${line} | grep grub_mod_fini > /dev/null; then
+-      echo "void grub_${line}_fini (void);" | sed 's,\.mod,,g;'
++      echo "void grub_${line%%.*}_fini (void);"
+   fi
+ done
+-- 
+1.9.3
+

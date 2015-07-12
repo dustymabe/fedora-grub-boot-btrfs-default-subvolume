@@ -1,0 +1,42 @@
+From 4530afc725782bbb92d4681fc338acebc4604b45 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Fri, 28 Feb 2014 09:48:57 +0100
+Subject: [PATCH 062/152] 	* grub-core/loader/i386/multiboot_mbi.c
+ (grub_multiboot_make_mbi): Limit 	location to 640K.
+
+---
+ ChangeLog                             | 5 +++++
+ grub-core/loader/i386/multiboot_mbi.c | 2 +-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 4f6f6d6..bbaed26 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi): Limit
++	location to 640K.
++
++2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* grub-core/kern/i386/coreboot/mmap.c: Filter out 0xa0000-0x100000
+ 	region.
+ 
+diff --git a/grub-core/loader/i386/multiboot_mbi.c b/grub-core/loader/i386/multiboot_mbi.c
+index 7431aa4..f10c087 100644
+--- a/grub-core/loader/i386/multiboot_mbi.c
++++ b/grub-core/loader/i386/multiboot_mbi.c
+@@ -446,7 +446,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
+   bufsize = grub_multiboot_get_mbi_size ();
+ 
+   err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
+-					  0x10000, 0x100000 - bufsize,
++					  0x10000, 0xa0000 - bufsize,
+ 					  bufsize, 4,
+ 					  GRUB_RELOCATOR_PREFERENCE_NONE, 0);
+   if (err)
+-- 
+1.9.3
+

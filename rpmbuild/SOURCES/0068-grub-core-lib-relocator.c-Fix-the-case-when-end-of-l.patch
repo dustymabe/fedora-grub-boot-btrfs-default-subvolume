@@ -1,0 +1,39 @@
+From 5d1749ea5730be5c9c32228461b784317a500f4b Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Wed, 26 Mar 2014 08:48:30 +0100
+Subject: [PATCH 068/152] 	* grub-core/lib/relocator.c: Fix the case when
+ end of leftover is used.
+
+---
+ ChangeLog                 | 4 ++++
+ grub-core/lib/relocator.c | 2 ++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index 091535b..9404eda 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2014-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* grub-core/lib/relocator.c: Fix the case when end of leftover is used.
++
+ 2014-03-26  Fu Wei <fu.wei@linaro.org>
+ 
+ 	* grub-core/loader/arm64/linux.c: Remove redundant "0x".
+diff --git a/grub-core/lib/relocator.c b/grub-core/lib/relocator.c
+index 9f9770b..cb11ea5 100644
+--- a/grub-core/lib/relocator.c
++++ b/grub-core/lib/relocator.c
+@@ -865,6 +865,8 @@ malloc_in_range (struct grub_relocator *rel,
+ 			% GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT;
+ 		      struct grub_relocator_fw_leftover *lo
+ 			= events[last_lo].leftover;
++		      if (offend == 0 && alloc_end != alloc_start)
++			offend = GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT;
+ 		      lo->freebytes[offstart / 8]
+ 			&= ((1 << (8 - (start % 8))) - 1);
+ 		      grub_memset (lo->freebytes + (offstart + 7) / 8, 0,
+-- 
+1.9.3
+

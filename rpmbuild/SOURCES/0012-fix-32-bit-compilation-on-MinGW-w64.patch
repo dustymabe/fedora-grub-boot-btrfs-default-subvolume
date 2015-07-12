@@ -1,0 +1,45 @@
+From afda7f47601f36a98074d8d21ffb640256f02267 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Tue, 7 Jan 2014 18:43:02 +0400
+Subject: [PATCH 012/152] fix 32 bit compilation on MinGW-w64
+
+Use _FILE_OFFSET_BITS macro to distinguish between native MinGW and
+32 bit under MinGW-64. The latter does not require fseeko/ftello
+redefinition which it already does in case of _FILE_OFFSET_BITS=64.
+---
+ ChangeLog                             | 5 +++++
+ include/grub/osdep/hostfile_windows.h | 3 +++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index 8c1ecec..e87f0a7 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,8 @@
++2014-01-07  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* include/grub/osdep/hostfile_windows.h: Do not redefine fseeko/ftello
++	on MinGW-64 when compiling for 32 bits.
++
+ 2013-12-30  Andrey Borzenkov <arvidjaar@gmail.com>
+ 
+ 	* grub-core/Makefile.core.def: strip .eh_frame section for arm64-efi.
+diff --git a/include/grub/osdep/hostfile_windows.h b/include/grub/osdep/hostfile_windows.h
+index 36615b2..79efcfa 100644
+--- a/include/grub/osdep/hostfile_windows.h
++++ b/include/grub/osdep/hostfile_windows.h
+@@ -69,8 +69,11 @@ enum grub_util_fd_open_flags_t
+ 
+ #if defined (__MINGW32__) && !defined (__MINGW64__)
+ 
++/* 32 bit on MinGW-64 already redefines them if _FILE_OFFSET_BITS=64 */
++#if !defined(_FILE_OFFSET_BITS)
+ #define fseeko fseeko64
+ #define ftello ftello64
++#endif
+ 
+ #endif
+ 
+-- 
+1.9.3
+

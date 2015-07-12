@@ -1,0 +1,37 @@
+From 3e02e2fbd2089645ac2c482dad59318394b62252 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Tue, 21 Jan 2014 19:41:11 +0400
+Subject: [PATCH 039/152] Show detected path to DejaVuSans in configure summary
+
+---
+ ChangeLog    | 1 +
+ configure.ac | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index 9f5d81d..3ba57ae 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,6 +1,7 @@
+ 2014-01-21  Andrey Borzenkov <arvidjaar@gmail.com>
+ 
+ 	* configure.ac: Look for DejaVuSans also in /usr/share/fonts/truetype.
++	Show detected font path in summary.
+ 
+ 2014-01-21  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+ 
+diff --git a/configure.ac b/configure.ac
+index 120263e..8888c2f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1816,6 +1816,7 @@ echo grub-mount: No "($grub_mount_excuse)"
+ fi
+ if [ x"$starfield_excuse" = x ]; then
+ echo starfield theme: Yes
++echo With DejaVuSans font from $DJVU_FONT_SOURCE
+ else
+ echo starfield theme: No "($starfield_excuse)"
+ fi
+-- 
+1.9.3
+

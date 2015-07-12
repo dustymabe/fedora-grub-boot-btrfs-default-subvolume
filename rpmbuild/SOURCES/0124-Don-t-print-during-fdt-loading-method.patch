@@ -1,0 +1,27 @@
+From aa8c71086da3a28382b8bd958bac1c5d3b2b2be3 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Tue, 14 Jan 2014 16:15:46 -0500
+Subject: [PATCH 124/152] Don't print during fdt loading method.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ util/grub.d/10_linux.in | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/util/grub.d/10_linux.in b/util/grub.d/10_linux.in
+index 2b8c561..acf2e0e 100644
+--- a/util/grub.d/10_linux.in
++++ b/util/grub.d/10_linux.in
+@@ -162,9 +162,7 @@ EOF
+     fi
+   fi
+   if test -n "${fdt}" ; then
+-    message="$(gettext_printf "Loading fdt ...")"
+     sed "s/^/$submenu_indentation/" << EOF
+-	echo	'$(echo "$message" | grub_quote)'
+ 	devicetree	${rel_dirname}/${fdt}
+ EOF
+   fi
+-- 
+1.9.3
+

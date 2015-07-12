@@ -1,0 +1,43 @@
+From a6e7719bbe05993613a8de69dba14fa092144925 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Wed, 25 Dec 2013 22:36:28 +0400
+Subject: [PATCH 001/152] fix EFI detection on Windows
+
+We are on legacy BIOS if GetFirmwareEnvironmentVariable fails (returns
+zero) *and* extended error information is ERROR_INVALID_FUNCTION.
+
+Cf. http://msdn.microsoft.com/en-us/library/windows/desktop/ms724325%28v=vs.85%29.aspx
+---
+ ChangeLog                          | 5 +++++
+ grub-core/osdep/windows/platform.c | 2 +-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 41bcebf..21ec1c7 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,8 @@
++2013-12-25  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* grub-core/osdep/windows/platform.c (get_platform): Fix EFI
++	detection.
++
+ 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* configure.ac: Set version to 2.02~beta2.
+diff --git a/grub-core/osdep/windows/platform.c b/grub-core/osdep/windows/platform.c
+index f2b9d71..d217efe 100644
+--- a/grub-core/osdep/windows/platform.c
++++ b/grub-core/osdep/windows/platform.c
+@@ -100,7 +100,7 @@ get_platform (void)
+ 
+   if (!func_GetFirmwareEnvironmentVariableW (L"BootOrder", GRUB_EFI_GLOBAL_VARIABLE_GUID_WINDOWS_STR,
+ 					     buffer, sizeof (buffer))
+-      && GetLastError () != ERROR_INVALID_FUNCTION)
++      && GetLastError () == ERROR_INVALID_FUNCTION)
+     {
+       platform = PLAT_BIOS;
+       return;
+-- 
+1.9.3
+

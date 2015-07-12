@@ -1,0 +1,60 @@
+From c18e39b667adb11624f3f4162c1342b76712d655 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Sun, 26 Jan 2014 02:36:05 +0100
+Subject: [PATCH 046/152] 	* grub-core/term/serial.c
+ (grub_serial_register): Fix invalid free. 	Ensure that pointers are
+ inited to NULL and that pointers are not 	accessed after free.
+
+---
+ ChangeLog               | 5 +++++
+ grub-core/term/serial.c | 8 ++++----
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index c93f11f..67b4d5c 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,8 @@
++2014-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* grub-core/term/serial.c (grub_serial_register): Fix invalid free.
++	Ensure that pointers are inited to NULL and that pointers are not
++	accessed after free.
+ 
+ 2014-01-25  Andrey Borzenkov <arvidjaar@gmail.com>
+ 
+diff --git a/grub-core/term/serial.c b/grub-core/term/serial.c
+index b581a76..c9b5574 100644
+--- a/grub-core/term/serial.c
++++ b/grub-core/term/serial.c
+@@ -338,23 +338,23 @@ grub_serial_register (struct grub_serial_port *port)
+       grub_free (indata);
+       return grub_errno;
+     }
+-  
+-  out = grub_malloc (sizeof (*out));
++
++  out = grub_zalloc (sizeof (*out));
+   if (!out)
+     {
+-      grub_free (in);
+       grub_free (indata);
+       grub_free ((char *) in->name);
++      grub_free (in);
+       return grub_errno;
+     }
+ 
+   outdata = grub_malloc (sizeof (*outdata));
+   if (!outdata)
+     {
+-      grub_free (in);
+       grub_free (indata);
+       grub_free ((char *) in->name);
+       grub_free (out);
++      grub_free (in);
+       return grub_errno;
+     }
+ 
+-- 
+1.9.3
+

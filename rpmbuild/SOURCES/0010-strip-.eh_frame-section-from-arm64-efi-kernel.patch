@@ -1,0 +1,39 @@
+From 9e9507d2e1eaed4fc2ebe2959c5405687485f613 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Mon, 30 Dec 2013 12:56:19 +0000
+Subject: [PATCH 010/152] strip .eh_frame section from arm64-efi kernel
+
+Fixes grub-mkimage error "relocation 0x105 is not implemented yet."
+---
+ ChangeLog                   | 4 ++++
+ grub-core/Makefile.core.def | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index db84300..8c1ecec 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2013-12-30  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* grub-core/Makefile.core.def: strip .eh_frame section for arm64-efi.
++
+ 2013-12-30  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* NEWS: Add few missing entries. Correct existing ones.
+diff --git a/grub-core/Makefile.core.def b/grub-core/Makefile.core.def
+index c916246..42443bc 100644
+--- a/grub-core/Makefile.core.def
++++ b/grub-core/Makefile.core.def
+@@ -66,7 +66,7 @@ kernel = {
+   arm_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
+ 
+   arm64_efi_ldflags          = '-Wl,-r,-d';
+-  arm64_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
++  arm64_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version -R .eh_frame';
+ 
+   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
+   i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x9000';
+-- 
+1.9.3
+

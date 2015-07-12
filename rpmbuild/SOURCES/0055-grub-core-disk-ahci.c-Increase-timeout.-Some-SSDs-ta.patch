@@ -1,0 +1,42 @@
+From 45dd39fb467d061a550113fd5e5431209f0db73c Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Wed, 29 Jan 2014 23:50:49 +0100
+Subject: [PATCH 055/152] 	* grub-core/disk/ahci.c: Increase timeout.
+ Some SSDs take up to 	7 seconds to recover if last poweroff was bad.
+
+---
+ ChangeLog             | 5 +++++
+ grub-core/disk/ahci.c | 2 +-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index bc1ab23..1a822f3 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* grub-core/disk/ahci.c: Increase timeout. Some SSDs take up to
++	7 seconds to recover if last poweroff was bad.
++
++2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* grub-core/disk/ahci.c: Properly handle transactions with no
+ 	transferred data.
+ 
+diff --git a/grub-core/disk/ahci.c b/grub-core/disk/ahci.c
+index fdd40c6..5e4a639 100644
+--- a/grub-core/disk/ahci.c
++++ b/grub-core/disk/ahci.c
+@@ -1022,7 +1022,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
+   grub_dprintf ("ahci", "AHCI tfd = %x\n",
+ 		dev->hba->ports[dev->port].task_file_data);
+ 
+-  endtime = grub_get_time_ms () + (spinup ? 10000 : 5000);
++  endtime = grub_get_time_ms () + (spinup ? 20000 : 20000);
+   while ((dev->hba->ports[dev->port].command_issue & 1))
+     if (grub_get_time_ms () > endtime)
+       {
+-- 
+1.9.3
+

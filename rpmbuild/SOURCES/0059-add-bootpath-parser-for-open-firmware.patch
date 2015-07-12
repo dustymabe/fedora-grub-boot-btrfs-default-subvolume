@@ -1,0 +1,211 @@
+From 1a768cc5a65094e19c216caf92dd190317df25fc Mon Sep 17 00:00:00 2001
+From: Paulo Flabiano Smorigo <pfsmorigo@br.ibm.com>
+Date: Tue, 4 Feb 2014 19:00:55 -0200
+Subject: [PATCH 059/152] add bootpath parser for open firmware
+
+It enables net boot even when there is no bootp/dhcp server.
+
+* grub-core/net/drivers/ieee1275/ofnet.c: Add grub_ieee1275_parse_bootpath and
+call it at grub_ieee1275_net_config_real.
+* grub-core/kern/ieee1275/init.c: Add bootpath to grub_ieee1275_net_config.
+* include/grub/ieee1275/ieee1275.h: Likewise.
+---
+ ChangeLog                              |  13 ++++
+ grub-core/kern/ieee1275/init.c         |   7 +--
+ grub-core/net/drivers/ieee1275/ofnet.c | 107 ++++++++++++++++++++++++++++++++-
+ include/grub/ieee1275/ieee1275.h       |   5 +-
+ 4 files changed, 125 insertions(+), 7 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 63f5aa3..5237631 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,18 @@
+ 2014-02-04  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+ 
++	Add bootpath parser for open firmware.
++
++	It enables net boot even when there is no bootp/dhcp server.
++
++	* grub-core/net/drivers/ieee1275/ofnet.c: Add grub_ieee1275_parse_bootpath
++	and call it at grub_ieee1275_net_config_real.
++	* grub-core/kern/ieee1275/init.c: Add bootpath to
++	grub_ieee1275_net_config.
++	* include/grub/ieee1275/ieee1275.h: Likewise.
++
++
++2014-02-04  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
++
+ 	Add grub_env_set_net_property function.
+ 
+ 	* grub-core/net/bootp.c: Remove set_env_limn_ro.
+diff --git a/grub-core/kern/ieee1275/init.c b/grub-core/kern/ieee1275/init.c
+index 89b2822..d5bd74d 100644
+--- a/grub-core/kern/ieee1275/init.c
++++ b/grub-core/kern/ieee1275/init.c
+@@ -80,9 +80,8 @@ grub_translate_ieee1275_path (char *filepath)
+     }
+ }
+ 
+-void (*grub_ieee1275_net_config) (const char *dev,
+-				  char **device,
+-				  char **path);
++void (*grub_ieee1275_net_config) (const char *dev, char **device, char **path,
++                                  char *bootpath);
+ void
+ grub_machine_get_bootlocation (char **device, char **path)
+ {
+@@ -126,7 +125,7 @@ grub_machine_get_bootlocation (char **device, char **path)
+       *ptr = 0;
+ 
+       if (grub_ieee1275_net_config)
+-	grub_ieee1275_net_config (canon, device, path);
++	grub_ieee1275_net_config (canon, device, path, bootpath);
+       grub_free (dev);
+       grub_free (canon);
+     }
+diff --git a/grub-core/net/drivers/ieee1275/ofnet.c b/grub-core/net/drivers/ieee1275/ofnet.c
+index 4483c91..eea8e71 100644
+--- a/grub-core/net/drivers/ieee1275/ofnet.c
++++ b/grub-core/net/drivers/ieee1275/ofnet.c
+@@ -127,8 +127,111 @@ bootp_response_properties[] =
+     { .name = "bootpreply-packet", .offset = 0x2a},
+   };
+ 
++enum
++{
++  BOOTARGS_SERVER_ADDR,
++  BOOTARGS_FILENAME,
++  BOOTARGS_CLIENT_ADDR,
++  BOOTARGS_GATEWAY_ADDR,
++  BOOTARGS_BOOTP_RETRIES,
++  BOOTARGS_TFTP_RETRIES,
++  BOOTARGS_SUBNET_MASK,
++  BOOTARGS_BLOCKSIZE
++};
++
++static int
++grub_ieee1275_parse_bootpath (const char *devpath, char *bootpath,
++                              char **device, struct grub_net_card **card)
++{
++  char *args;
++  char *comma_char = 0;
++  char *equal_char = 0;
++  grub_size_t field_counter = 0;
++
++  grub_net_network_level_address_t client_addr, gateway_addr, subnet_mask;
++  grub_net_link_level_address_t hw_addr;
++  grub_net_interface_flags_t flags = 0;
++  struct grub_net_network_level_interface *inter;
++
++  hw_addr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
++
++  args = bootpath + grub_strlen (devpath) + 1;
++  do
++    {
++      comma_char = grub_strchr (args, ',');
++      if (comma_char != 0)
++        *comma_char = 0;
++
++      /* Check if it's an option (like speed=auto) and not a default parameter */
++      equal_char = grub_strchr (args, '=');
++      if (equal_char != 0)
++        {
++          *equal_char = 0;
++          grub_env_set_net_property ((*card)->name, args, equal_char + 1,
++                                     grub_strlen(equal_char + 1));
++          *equal_char = '=';
++        }
++      else
++        {
++          switch (field_counter++)
++            {
++            case BOOTARGS_SERVER_ADDR:
++              *device = grub_xasprintf ("tftp,%s", args);
++              if (!*device)
++                return grub_errno;
++              break;
++
++            case BOOTARGS_CLIENT_ADDR:
++              grub_net_resolve_address (args, &client_addr);
++              break;
++
++            case BOOTARGS_GATEWAY_ADDR:
++              grub_net_resolve_address (args, &gateway_addr);
++              break;
++
++            case BOOTARGS_SUBNET_MASK:
++              grub_net_resolve_address (args, &subnet_mask);
++              break;
++            }
++        }
++      args = comma_char + 1;
++      if (comma_char != 0)
++        *comma_char = ',';
++    } while (comma_char != 0);
++
++  if ((client_addr.ipv4 != 0) && (subnet_mask.ipv4 != 0))
++    {
++      grub_ieee1275_phandle_t devhandle;
++      grub_ieee1275_finddevice (devpath, &devhandle);
++      grub_ieee1275_get_property (devhandle, "mac-address",
++                                  hw_addr.mac, sizeof(hw_addr.mac), 0);
++      inter = grub_net_add_addr ((*card)->name, *card, &client_addr, &hw_addr,
++                                 flags);
++      grub_net_add_ipv4_local (inter,
++                          __builtin_ctz (~grub_le_to_cpu32 (subnet_mask.ipv4)));
++    }
++
++  if (gateway_addr.ipv4 != 0)
++    {
++      grub_net_network_level_netaddress_t target;
++      char *rname;
++
++      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
++      target.ipv4.base = 0;
++      target.ipv4.masksize = 0;
++      rname = grub_xasprintf ("%s:default", ((*card)->name));
++      if (rname)
++        grub_net_add_route_gw (rname, target, gateway_addr);
++      else
++        return grub_errno;
++    }
++
++  return 0;
++}
++
+ static void
+-grub_ieee1275_net_config_real (const char *devpath, char **device, char **path)
++grub_ieee1275_net_config_real (const char *devpath, char **device, char **path,
++                               char *bootpath)
+ {
+   struct grub_net_card *card;
+ 
+@@ -158,6 +261,8 @@ grub_ieee1275_net_config_real (const char *devpath, char **device, char **path)
+       }
+     grub_free (canon);
+ 
++    grub_ieee1275_parse_bootpath (devpath, bootpath, device, &card);
++
+     for (i = 0; i < ARRAY_SIZE (bootp_response_properties); i++)
+       if (grub_ieee1275_get_property_length (grub_ieee1275_chosen,
+ 					     bootp_response_properties[i].name,
+diff --git a/include/grub/ieee1275/ieee1275.h b/include/grub/ieee1275/ieee1275.h
+index dc54bea..8e42513 100644
+--- a/include/grub/ieee1275/ieee1275.h
++++ b/include/grub/ieee1275/ieee1275.h
+@@ -70,8 +70,9 @@ struct grub_ieee1275_devalias
+ };
+ 
+ extern void (*EXPORT_VAR(grub_ieee1275_net_config)) (const char *dev,
+-						     char **device,
+-						     char **path);
++                                                     char **device,
++                                                     char **path,
++                                                     char *bootargs);
+ 
+ /* Maps a device alias to a pathname.  */
+ extern grub_ieee1275_phandle_t EXPORT_VAR(grub_ieee1275_chosen);
+-- 
+1.9.3
+

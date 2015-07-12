@@ -1,0 +1,54 @@
+From 5e8c619b17cdf70b30d37412738b149d80874c28 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Wed, 29 Jan 2014 23:49:51 +0100
+Subject: [PATCH 054/152] 	* grub-core/disk/ahci.c: Properly handle
+ transactions with no 	transferred data.
+
+---
+ ChangeLog             | 5 +++++
+ grub-core/disk/ahci.c | 7 +++++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 15300b0..bc1ab23 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* grub-core/disk/ahci.c: Properly handle transactions with no
++	transferred data.
++
++2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* grub-core/disk/ahci.c: Add safety cleanups.
+ 
+ 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+diff --git a/grub-core/disk/ahci.c b/grub-core/disk/ahci.c
+index 643e691..fdd40c6 100644
+--- a/grub-core/disk/ahci.c
++++ b/grub-core/disk/ahci.c
+@@ -932,7 +932,10 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
+   if (parms->size > GRUB_AHCI_PRDT_MAX_CHUNK_LENGTH)
+     return grub_error (GRUB_ERR_BUG, "too big data buffer");
+ 
+-  bufc = grub_memalign_dma32 (1024, parms->size + (parms->size & 1));
++  if (parms->size)
++    bufc = grub_memalign_dma32 (1024, parms->size + (parms->size & 1));
++  else
++    bufc = grub_memalign_dma32 (1024, 512);
+ 
+   grub_dprintf ("ahci", "AHCI tfd = %x, CL=%p\n",
+ 		dev->hba->ports[dev->port].task_file_data,
+@@ -942,7 +945,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
+     = (5 << GRUB_AHCI_CONFIG_CFIS_LENGTH_SHIFT)
+     //    | GRUB_AHCI_CONFIG_CLEAR_R_OK
+     | (0 << GRUB_AHCI_CONFIG_PMP_SHIFT)
+-    | (1 << GRUB_AHCI_CONFIG_PRDT_LENGTH_SHIFT)
++    | ((parms->size ? 1 : 0) << GRUB_AHCI_CONFIG_PRDT_LENGTH_SHIFT)
+     | (parms->cmdsize ? GRUB_AHCI_CONFIG_ATAPI : 0)
+     | (parms->write ? GRUB_AHCI_CONFIG_WRITE : GRUB_AHCI_CONFIG_READ)
+     | (parms->taskfile.cmd == 8 ? (1 << 8) : 0);
+-- 
+1.9.3
+

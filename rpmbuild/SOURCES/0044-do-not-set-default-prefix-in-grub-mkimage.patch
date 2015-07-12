@@ -1,0 +1,75 @@
+From 2b2a550c14e70d17af4140e64d08022ed170f0c8 Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Sat, 25 Jan 2014 19:54:51 +0400
+Subject: [PATCH 044/152] do not set default prefix in grub-mkimage
+
+Default prefix is likely wrong on Unix and completely wrong on Windows.
+Let caller set it explicitly to avoid any ambiguity.
+---
+ ChangeLog           |  4 ++++
+ util/grub-mkimage.c | 16 +++++++++++-----
+ 2 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index e149d8e..b405b7e 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2014-01-25  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* util/grub-mkimage.c: Make prefix argument mandatory.
++
+ 2014-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	Fix several translatable strings.
+diff --git a/util/grub-mkimage.c b/util/grub-mkimage.c
+index a2bd4c1..1e0bcf1 100644
+--- a/util/grub-mkimage.c
++++ b/util/grub-mkimage.c
+@@ -64,7 +64,7 @@ static struct argp_option options[] = {
+   {"directory",  'd', N_("DIR"), 0,
+    /* TRANSLATORS: platform here isn't identifier. It can be translated.  */
+    N_("use images and modules under DIR [default=%s/<platform>]"), 0},
+-  {"prefix",  'p', N_("DIR"), 0, N_("set prefix directory [default=%s]"), 0},
++  {"prefix",  'p', N_("DIR"), 0, N_("set prefix directory"), 0},
+   {"memdisk",  'm', N_("FILE"), 0,
+    /* TRANSLATORS: "memdisk" here isn't an identifier, it can be translated.
+     "embed" is a verb (command description).  "*/
+@@ -93,8 +93,6 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
+     {
+     case 'd':
+       return xasprintf (text, grub_util_get_pkglibdir ());
+-    case 'p':
+-      return xasprintf (text, DEFAULT_DIRECTORY);
+     case 'O':
+       {
+ 	char *formats = grub_install_get_image_targets_string (), *ret;
+@@ -268,6 +266,15 @@ main (int argc, char *argv[])
+       exit(1);
+     }
+ 
++  if (!arguments.prefix)
++    {
++      char *program = xstrdup(program_name);
++      printf ("%s\n", _("Prefix not specified (use the -p option)."));
++      argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
++      free (program);
++      exit(1);
++    }
++
+   if (arguments.output)
+     {
+       fp = grub_util_fopen (arguments.output, "wb");
+@@ -287,8 +294,7 @@ main (int argc, char *argv[])
+       strcpy (ptr, dn);
+     }
+ 
+-  grub_install_generate_image (arguments.dir,
+-			       arguments.prefix ? : DEFAULT_DIRECTORY, fp,
++  grub_install_generate_image (arguments.dir, arguments.prefix, fp,
+ 			       arguments.output, arguments.modules,
+ 			       arguments.memdisk, arguments.pubkeys,
+ 			       arguments.npubkeys, arguments.config,
+-- 
+1.9.3
+

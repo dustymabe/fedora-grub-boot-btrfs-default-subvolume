@@ -1,0 +1,43 @@
+From 61fdf8bebdeaed4b601f0eca847282780380191f Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Thu, 15 May 2014 14:36:48 +0200
+Subject: [PATCH 082/152] 	* grub-core/commands/verify.c
+ (grub_pubkey_open): Trust procfs.
+
+---
+ ChangeLog                   | 4 ++++
+ grub-core/commands/verify.c | 4 +++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index d0896d8..2a94ad9 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,9 @@
+ 2014-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* grub-core/commands/verify.c (grub_pubkey_open): Trust procfs.
++
++2014-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* grub-core/commands/verify.c (grub_pubkey_open): Fix memdisk
+ 	check.
+ 
+diff --git a/grub-core/commands/verify.c b/grub-core/commands/verify.c
+index 6349ccf..525bdd1 100644
+--- a/grub-core/commands/verify.c
++++ b/grub-core/commands/verify.c
+@@ -835,7 +835,9 @@ grub_pubkey_open (grub_file_t io, const char *filename)
+ 
+   if (!sec)
+     return io;
+-  if (io->device->disk && io->device->disk->dev->id == GRUB_DISK_DEVICE_MEMDISK_ID)
++  if (io->device->disk && 
++      (io->device->disk->dev->id == GRUB_DISK_DEVICE_MEMDISK_ID
++       || io->device->disk->dev->id == GRUB_DISK_DEVICE_PROCFS_ID))
+     return io;
+   fsuf = grub_malloc (grub_strlen (filename) + sizeof (".sig"));
+   if (!fsuf)
+-- 
+1.9.3
+

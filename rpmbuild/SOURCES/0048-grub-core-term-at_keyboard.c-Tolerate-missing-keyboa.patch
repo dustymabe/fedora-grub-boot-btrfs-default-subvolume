@@ -1,0 +1,40 @@
+From 379cbd6233fe227544ff3073b60b295fe841b654 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Sun, 26 Jan 2014 03:31:10 +0100
+Subject: [PATCH 048/152] 	* grub-core/term/at_keyboard.c: Tolerate
+ missing keyboard.
+
+---
+ ChangeLog                    | 4 ++++
+ grub-core/term/at_keyboard.c | 3 +++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/ChangeLog b/ChangeLog
+index bbec1e7..d37d4a6 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2014-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* grub-core/term/at_keyboard.c: Tolerate missing keyboard.
++
+ 2014-01-26  Mike Gilbert <floppym@gentoo.org>
+ 
+ 	grub-install: support for partitioned partx loop devices.
+diff --git a/grub-core/term/at_keyboard.c b/grub-core/term/at_keyboard.c
+index f5071ce..b4257e8 100644
+--- a/grub-core/term/at_keyboard.c
++++ b/grub-core/term/at_keyboard.c
+@@ -396,6 +396,9 @@ fetch_key (int *is_break)
+   if (! KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
+     return -1;
+   at_key = grub_inb (KEYBOARD_REG_DATA);
++  /* May happen if no keyboard is connected. Just ignore this.  */
++  if (at_key == 0xff)
++    return -1;
+   if (at_key == 0xe0)
+     {
+       e0_received = 1;
+-- 
+1.9.3
+

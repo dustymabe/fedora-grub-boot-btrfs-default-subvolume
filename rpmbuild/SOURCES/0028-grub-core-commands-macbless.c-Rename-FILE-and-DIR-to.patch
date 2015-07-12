@@ -1,0 +1,61 @@
+From 9cbb9fc3d79e449affe7ed5e104aa828b72ad2cd Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Sat, 18 Jan 2014 19:26:40 +0100
+Subject: [PATCH 028/152] 	* grub-core/commands/macbless.c: Rename FILE
+ and DIR to avoid 	conflicts.
+
+	Reported by: Andrey Borzenkov.
+---
+ ChangeLog                     | 7 +++++++
+ grub-core/commands/macbless.c | 6 +++---
+ 2 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index dad469b..9d1a3f0 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,10 @@
++2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* grub-core/commands/macbless.c: Rename FILE and DIR to avoid
++	conflicts.
++
++	Reported by: Andrey Borzenkov.
++
+ 2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
+ 
+ 	* include/grub/misc.h: Move macros for compiler features to ...
+diff --git a/grub-core/commands/macbless.c b/grub-core/commands/macbless.c
+index c521083..4724edd 100644
+--- a/grub-core/commands/macbless.c
++++ b/grub-core/commands/macbless.c
+@@ -37,7 +37,7 @@ struct find_node_context
+   grub_uint64_t inode_found;
+   char *dirname;
+   enum
+-  { NONE, FILE, DIR } found;
++  { FOUND_NONE, FOUND_FILE, FOUND_DIR } found;
+ };
+ 
+ static int
+@@ -53,7 +53,7 @@ find_inode (const char *filename,
+ 	   && grub_strcasecmp (ctx->dirname, filename) == 0)))
+     {
+       ctx->inode_found = info->inode;
+-      ctx->found = info->dir ? DIR : FILE;
++      ctx->found = info->dir ? FOUND_DIR : FOUND_FILE;
+     }
+   return 0;
+ }
+@@ -175,7 +175,7 @@ grub_mac_bless_file (grub_device_t dev, const char *path_in, int intel)
+   grub_free (path);
+ 
+   return grub_mac_bless_inode (dev, (grub_uint32_t) ctx.inode_found,
+-			       (ctx.found == DIR), intel);
++			       (ctx.found == FOUND_DIR), intel);
+ }
+ 
+ static grub_err_t
+-- 
+1.9.3
+

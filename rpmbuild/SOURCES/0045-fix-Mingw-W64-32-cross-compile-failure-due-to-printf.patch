@@ -1,0 +1,108 @@
+From 90efd351fa4f81df97473e1bb8c8234a801f8ebe Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Sat, 25 Jan 2014 21:49:41 +0400
+Subject: [PATCH 045/152] fix Mingw W64-32 cross compile failure due to printf
+ redefinition in libintl.h
+
+In file included from util/misc.c:36:0:
+./include/grub/emu/misc.h:56:1: error: 'libintl_printf' is an unrecognized format function type [-Werror=format=]
+ char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2))) WARN_UNUSED_RESULT;
+ ^
+./include/grub/emu/misc.h:58:1: error: 'libintl_printf' is an unrecognized format function type [-Werror=format=]
+
+The reason is libintl.h which redefines printf as libintl_printf. The problem
+is not present in native MinGW build which avoids redefinition.  Use
+(format (__printf__) instead which is valid replacement in GCC.
+
+v2: add grub-core/lib/libgcrypt/src/g10lib.h
+v3: modify g10lib.h during import
+---
+ ChangeLog               | 9 +++++++++
+ include/grub/crypto.h   | 2 +-
+ include/grub/emu/misc.h | 8 ++++----
+ include/grub/err.h      | 2 +-
+ util/import_gcry.py     | 6 ++++++
+ 5 files changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index b405b7e..c93f11f 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,12 @@
++
++2014-01-25  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* include/grub/crypto.h: Replace __attribute__ ((format (printf)) with
++	__attribute__ ((format (__printf__)) to fix compilation under MinGW-w64.
++	* include/grub/emu/misc.h: ... and here.
++	* include/grub/err.h: ... and here.
++	* util/import_gcry.py: ... and here (in files g10lib.h).
++
+ 2014-01-25  Andrey Borzenkov <arvidjaar@gmail.com>
+ 
+ 	* util/grub-mkimage.c: Make prefix argument mandatory.
+diff --git a/include/grub/crypto.h b/include/grub/crypto.h
+index ec1b980..a24e89d 100644
+--- a/include/grub/crypto.h
++++ b/include/grub/crypto.h
+@@ -408,7 +408,7 @@ void _gcry_assert_failed (const char *expr, const char *file, int line,
+                           const char *func) __attribute__ ((noreturn));
+ 
+ void _gcry_burn_stack (int bytes);
+-void _gcry_log_error( const char *fmt, ... )  __attribute__ ((format (printf, 1, 2)));
++void _gcry_log_error( const char *fmt, ... )  __attribute__ ((format (__printf__, 1, 2)));
+ 
+ 
+ #ifdef GRUB_UTIL
+diff --git a/include/grub/emu/misc.h b/include/grub/emu/misc.h
+index dde48c1..a588ba2 100644
+--- a/include/grub/emu/misc.h
++++ b/include/grub/emu/misc.h
+@@ -53,11 +53,11 @@ grub_util_device_is_mapped (const char *dev);
+ void * EXPORT_FUNC(xmalloc) (grub_size_t size) WARN_UNUSED_RESULT;
+ void * EXPORT_FUNC(xrealloc) (void *ptr, grub_size_t size) WARN_UNUSED_RESULT;
+ char * EXPORT_FUNC(xstrdup) (const char *str) WARN_UNUSED_RESULT;
+-char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2))) WARN_UNUSED_RESULT;
++char * EXPORT_FUNC(xasprintf) (const char *fmt, ...) __attribute__ ((format (__printf__, 1, 2))) WARN_UNUSED_RESULT;
+ 
+-void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+-void EXPORT_FUNC(grub_util_info) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+-void EXPORT_FUNC(grub_util_error) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2), noreturn));
++void EXPORT_FUNC(grub_util_warn) (const char *fmt, ...) __attribute__ ((format (__printf__, 1, 2)));
++void EXPORT_FUNC(grub_util_info) (const char *fmt, ...) __attribute__ ((format (__printf__, 1, 2)));
++void EXPORT_FUNC(grub_util_error) (const char *fmt, ...) __attribute__ ((format (__printf__, 1, 2), noreturn));
+ 
+ grub_uint64_t EXPORT_FUNC (grub_util_get_cpu_time_ms) (void);
+ 
+diff --git a/include/grub/err.h b/include/grub/err.h
+index 9896fcc..1590c68 100644
+--- a/include/grub/err.h
++++ b/include/grub/err.h
+@@ -91,6 +91,6 @@ int EXPORT_FUNC(grub_error_pop) (void);
+ void EXPORT_FUNC(grub_print_error) (void);
+ extern int EXPORT_VAR(grub_err_printed_errors);
+ int grub_err_printf (const char *fmt, ...)
+-     __attribute__ ((format (printf, 1, 2)));
++     __attribute__ ((format (__printf__, 1, 2)));
+ 
+ #endif /* ! GRUB_ERR_HEADER */
+diff --git a/util/import_gcry.py b/util/import_gcry.py
+index 63ebb90..2b3322d 100644
+--- a/util/import_gcry.py
++++ b/util/import_gcry.py
+@@ -534,6 +534,12 @@ for src in sorted (os.listdir (os.path.join (indir, "src"))):
+         fw.close ()
+         continue
+ 
++    if src == "g10lib.h":
++        fw.write (f.read ().replace ("(printf,f,a)", "(__printf__,f,a)"))
++        f.close ()
++        fw.close ()
++        continue
++
+     fw.write (f.read ())
+     f.close ()
+     fw.close ()
+-- 
+1.9.3
+

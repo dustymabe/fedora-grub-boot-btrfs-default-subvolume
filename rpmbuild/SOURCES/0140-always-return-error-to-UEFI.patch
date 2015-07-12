@@ -1,0 +1,25 @@
+From 36a34ede9dfa34840c59c7b331c1bc8d8ae7442e Mon Sep 17 00:00:00 2001
+From: Fedora Ninjas <grub2-owner@fedoraproject.org>
+Date: Wed, 26 Feb 2014 21:49:12 -0500
+Subject: [PATCH 140/152] always return error to UEFI
+
+---
+ grub-core/kern/efi/efi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/grub-core/kern/efi/efi.c b/grub-core/kern/efi/efi.c
+index cd839cc..1a8dba5 100644
+--- a/grub-core/kern/efi/efi.c
++++ b/grub-core/kern/efi/efi.c
+@@ -158,7 +158,7 @@ grub_exit (void)
+ {
+   grub_efi_fini ();
+   efi_call_4 (grub_efi_system_table->boot_services->exit,
+-              grub_efi_image_handle, GRUB_EFI_SUCCESS, 0, 0);
++              grub_efi_image_handle, GRUB_EFI_LOAD_ERROR, 0, 0);
+   for (;;) ;
+ }
+ 
+-- 
+1.9.3
+

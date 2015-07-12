@@ -1,0 +1,78 @@
+From 2cd73ec6b2efeaff2bdcd40cce0cd3145d9e07d0 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Fri, 24 Jan 2014 18:20:27 +0100
+Subject: [PATCH 043/152] 	Fix several translatable strings.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+	Suggested by: D. Prévot.
+---
+ ChangeLog                        | 6 ++++++
+ grub-core/commands/syslinuxcfg.c | 2 +-
+ grub-core/loader/arm64/linux.c   | 2 +-
+ util/grub-syslinux2cfg.c         | 4 ++--
+ 4 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 20e8baa..e149d8e 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,11 @@
+ 2014-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	Fix several translatable strings.
++
++	Suggested by: D. Prévot.
++
++2014-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* util/grub-install.c: List available targets.
+ 
+ 2014-01-23  Colin Watson  <cjwatson@ubuntu.com>
+diff --git a/grub-core/commands/syslinuxcfg.c b/grub-core/commands/syslinuxcfg.c
+index a4bfc40..00ae113 100644
+--- a/grub-core/commands/syslinuxcfg.c
++++ b/grub-core/commands/syslinuxcfg.c
+@@ -50,7 +50,7 @@ static const struct grub_arg_option options[] =
+      N_("root directory of the syslinux disk [default=/]."),
+      N_("DIR"), ARG_TYPE_STRING},
+     {"cwd",  'c', 0,
+-     N_("current directory of the syslinux [default is parent directory of input file]."),
++     N_("current directory of syslinux [default is parent directory of input file]."),
+      N_("DIR"), ARG_TYPE_STRING},
+     {"isolinux",     'i',  0, N_("assume input is an isolinux configuration file."), 0, 0},
+     {"pxelinux",     'p',  0, N_("assume input is a pxelinux configuration file."), 0, 0},
+diff --git a/grub-core/loader/arm64/linux.c b/grub-core/loader/arm64/linux.c
+index 75ad871..65129c2 100644
+--- a/grub-core/loader/arm64/linux.c
++++ b/grub-core/loader/arm64/linux.c
+@@ -120,7 +120,7 @@ check_kernel (struct grub_arm64_linux_kernel_header *lh)
+ 
+   if ((lh->code0 & 0xffff) != GRUB_EFI_PE_MAGIC)
+     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+-		       N_("plain Image kernel not supported - rebuild with CONFIG_(U)EFI_STUB enabled"));
++		       N_("plain image kernel not supported - rebuild with CONFIG_(U)EFI_STUB enabled"));
+ 
+   grub_dprintf ("linux", "UEFI stub kernel:\n");
+   grub_dprintf ("linux", "text_offset = 0x%012llx\n",
+diff --git a/util/grub-syslinux2cfg.c b/util/grub-syslinux2cfg.c
+index 5e944c2..f4fda6d 100644
+--- a/util/grub-syslinux2cfg.c
++++ b/util/grub-syslinux2cfg.c
+@@ -66,10 +66,10 @@ static struct argp_option options[] = {
+    N_("root directory of the syslinux disk [default=/]."), 0},
+   {"target-cwd",  'T', N_("DIR"), 0,
+    N_(
+-      "current directory of the syslinux as it will be seen on runtime  [default is parent directory of input file]."
++      "current directory of syslinux as it will be seen on runtime  [default is parent directory of input file]."
+ ), 0},
+   {"cwd",  'c', N_("DIR"), 0,
+-   N_("current directory of the syslinux [default is parent directory of input file]."), 0},
++   N_("current directory of syslinux [default is parent directory of input file]."), 0},
+ 
+   {"output",  'o', N_("FILE"), 0, N_("write output to FILE [default=stdout]."), 0},
+   {"isolinux",     'i', 0,      0, N_("assume input is an isolinux configuration file."), 0},
+-- 
+1.9.3
+

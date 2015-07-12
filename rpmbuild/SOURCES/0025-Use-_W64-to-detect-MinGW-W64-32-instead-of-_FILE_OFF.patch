@@ -1,0 +1,47 @@
+From bb3e1a1e8448f3ea9489b5ebfcec799196bc862f Mon Sep 17 00:00:00 2001
+From: Andrey Borzenkov <arvidjaar@gmail.com>
+Date: Sat, 18 Jan 2014 20:04:11 +0400
+Subject: [PATCH 025/152] Use _W64 to detect MinGW W64-32 instead of
+ _FILE_OFFSET_BITS
+
+In 94cee4a4c201bb506377b2c26e072eee8cb19d6f I overlooked that config.h
+unconditionally sets _FILE_OFFSET_BITS, so it cannot be used to detect
+MinGW W64 environment. It looks like Emacs folks already found
+solution; instead of _FILE_OFFSET_BITS use _W64 as suggested in
+http://lists.gnu.org/archive/html/emacs-devel/2013-03/msg00723.html
+---
+ ChangeLog                             | 5 +++++
+ include/grub/osdep/hostfile_windows.h | 4 ++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index fcbf220..5aac7c1 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,8 @@
++2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
++
++	* include/grub/osdep/hostfile_windows.h: Use _W64 instead of
++	FILE_OFFSET_BITS to differentiate between native MinGW and Mingw W64.
++
+ 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* grub-core/term/terminfo.c: Recognize keys F1-F12.
+diff --git a/include/grub/osdep/hostfile_windows.h b/include/grub/osdep/hostfile_windows.h
+index 79efcfa..bf6451b 100644
+--- a/include/grub/osdep/hostfile_windows.h
++++ b/include/grub/osdep/hostfile_windows.h
+@@ -69,8 +69,8 @@ enum grub_util_fd_open_flags_t
+ 
+ #if defined (__MINGW32__) && !defined (__MINGW64__)
+ 
+-/* 32 bit on MinGW-64 already redefines them if _FILE_OFFSET_BITS=64 */
+-#if !defined(_FILE_OFFSET_BITS)
++/* 32 bit on Mingw-w64 already redefines them if _FILE_OFFSET_BITS=64 */
++#ifndef _W64
+ #define fseeko fseeko64
+ #define ftello ftello64
+ #endif
+-- 
+1.9.3
+

@@ -1,0 +1,39 @@
+From fb62186fefaca6b302eb61081bb6281042ff7283 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Sun, 6 Apr 2014 00:44:44 +0200
+Subject: [PATCH 076/152] 	* grub-core/lib/syslinux_parse.c: Fix timeout
+ quoting.
+
+---
+ ChangeLog                      | 4 ++++
+ grub-core/lib/syslinux_parse.c | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 90e41bd..50d9291 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2014-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
++
++	* grub-core/lib/syslinux_parse.c: Fix timeout quoting.
++
+ 2014-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
+ 	* include/grub/libgcc.h: Remove ctzsi2 and ctzdi2. They're no longer
+diff --git a/grub-core/lib/syslinux_parse.c b/grub-core/lib/syslinux_parse.c
+index 21fa175..6bc504b 100644
+--- a/grub-core/lib/syslinux_parse.c
++++ b/grub-core/lib/syslinux_parse.c
+@@ -1432,7 +1432,7 @@ config_file (struct output_buffer *outbuf,
+       for (curentry = menu.entries; curentry->next; curentry = curentry->next);
+       lentry = curentry;
+ 
+-      print_string ("set timeout='");
++      print_string ("set timeout=");
+       err = print_num (outbuf, (menu.timeout + 9) / 10);
+       if (err)
+ 	return err;
+-- 
+1.9.3
+

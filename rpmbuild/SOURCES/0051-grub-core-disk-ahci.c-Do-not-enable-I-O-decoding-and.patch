@@ -1,0 +1,57 @@
+From 5795341bb64a4e101d7c067d688b19a41dd50662 Mon Sep 17 00:00:00 2001
+From: Vladimir Serbinenko <phcoder@gmail.com>
+Date: Wed, 29 Jan 2014 23:43:25 +0100
+Subject: [PATCH 051/152] 	* grub-core/disk/ahci.c: Do not enable I/O
+ decoding and keep 	enabling busmaster for the end.
+
+---
+ ChangeLog             |  5 +++++
+ grub-core/disk/ahci.c | 10 ++++++----
+ 2 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 9837c7f..51eba95 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,10 @@
+ 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+ 
++	* grub-core/disk/ahci.c: Do not enable I/O decoding and keep
++	enabling busmaster for the end.
++
++2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
++
+ 	* util/grub-mkfont.c: Downgrade warnings about unhandled features
+ 	to debug.
+ 
+diff --git a/grub-core/disk/ahci.c b/grub-core/disk/ahci.c
+index 0b13fb8..18c1327 100644
+--- a/grub-core/disk/ahci.c
++++ b/grub-core/disk/ahci.c
+@@ -194,10 +194,8 @@ grub_ahci_pciinit (grub_pci_device_t dev,
+     return 0;
+ 
+   addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+-  grub_pci_write_word (addr, grub_pci_read_word (addr) | 
+-		    GRUB_PCI_COMMAND_IO_ENABLED
+-		    | GRUB_PCI_COMMAND_MEM_ENABLED
+-		    | GRUB_PCI_COMMAND_BUS_MASTER);
++  grub_pci_write_word (addr, grub_pci_read_word (addr)
++		    | GRUB_PCI_COMMAND_MEM_ENABLED);
+ 
+   hba = grub_pci_device_map_range (dev, bar & GRUB_PCI_ADDR_MEM_MASK,
+ 				   sizeof (hba));
+@@ -621,6 +619,10 @@ grub_ahci_pciinit (grub_pci_device_t dev,
+     if (adevs[i] && (adevs[i]->hba->ports[adevs[i]->port].sig >> 16) == 0xeb14)
+       adevs[i]->atapi = 1;
+ 
++  addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
++  grub_pci_write_word (addr, grub_pci_read_word (addr)
++		    | GRUB_PCI_COMMAND_BUS_MASTER);
++
+   for (i = 0; i < nports; i++)
+     if (adevs[i])
+       {
+-- 
+1.9.3
+
