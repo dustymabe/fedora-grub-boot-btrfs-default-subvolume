@@ -217,6 +217,10 @@ Patch0154: 0154-Try-to-emit-linux16-initrd16-and-linuxefi-initrdefi-.patch
 Patch0155: 0001-Update-to-minilzo-2.08.patch
 Patch0156: 0001-Make-grub2-mkconfig-construct-titles-that-look-like-.patch
 Patch0157: 0002-Make-rescue-and-debug-entries-sort-right-again-in-gr.patch
+# Add in SUSE grub patches
+Patch2001: grub2-btrfs-01-add-ability-to-boot-from-subvolumes.patch
+Patch2002: grub2-btrfs-02-export-subvolume-envvars.patch
+Patch2003: grub2-btrfs-03-follow_default.patch
 
 BuildRequires:  flex bison binutils python
 BuildRequires:  ncurses-devel xz-devel bzip2-devel
