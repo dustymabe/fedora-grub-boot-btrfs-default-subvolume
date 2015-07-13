@@ -45,10 +45,14 @@ this repo:
 Building
 --------
 
-Run the following command from the root of the git repo to build the rpm:
+Run the following commands from the root of the git repo to download software needed 
+and to build the rpm on Fedora 22:
 
 ```
+dnf install yum-utils gcc rpm-build
+yum-builddep grub2
 rpmbuild -D "_topdir $(readlink -f ./)/rpmbuild" -ba ./rpmbuild/SPECS/grub2.spec
 ```
+
 
 
