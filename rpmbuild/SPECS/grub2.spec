@@ -221,6 +221,8 @@ Patch0157: 0002-Make-rescue-and-debug-entries-sort-right-again-in-gr.patch
 Patch2001: grub2-btrfs-01-add-ability-to-boot-from-subvolumes.patch
 Patch2002: grub2-btrfs-02-export-subvolume-envvars.patch
 Patch2003: grub2-btrfs-03-follow_default.patch
+# Add in dusty-grub2-btrfs-default-to-follow-default.patch patch
+Patch2004: dusty-grub2-btrfs-default-to-follow-default.patch
 
 BuildRequires:  flex bison binutils python
 BuildRequires:  ncurses-devel xz-devel bzip2-devel
