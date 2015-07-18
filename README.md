@@ -26,11 +26,8 @@ To get this functionality back I will pull a few patches from SUSE's grub:
 - grub2-btrfs-01-add-ability-to-boot-from-subvolumes.patch
 - grub2-btrfs-02-export-subvolume-envvars.patch
 - grub2-btrfs-03-follow_default.patch
-
-And then add one of my own to make following the default subvolume be
-the default behavior:
-
-- dusty-grub2-btrfs-default-to-follow-default.patch
+- grub2-btrfs-04-grub2-install.patch
+- grub2-btrfs-05-grub2-mkconfig.patch
 
 The patches were taken from the following SUSE srpm that was retrieved
 from the following URL and placed in this repo:
