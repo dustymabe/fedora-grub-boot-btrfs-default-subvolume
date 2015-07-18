@@ -1,3 +1,8 @@
+From: somebody@suse.com
+Subject: grub2-btrfs-05-grub2-mkconfig.patch
+
+Add in grub2-btrfs-05-grub2-mkconfig.patch
+
 ---
  util/grub-mkconfig.in       |    3 ++-
  util/grub-mkconfig_lib.in   |    4 ++++
