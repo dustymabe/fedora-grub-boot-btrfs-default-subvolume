@@ -57,21 +57,21 @@ Index: grub-2.02~beta2/util/grub.d/00_header.in
    load_env
  fi
  EOF
-@@ -356,3 +366,14 @@ fi
- if [ "x${GRUB_BADRAM}" != "x" ] ; then
-   echo "badram ${GRUB_BADRAM}"
- fi
-+
-+if [ "x${SUSE_BTRFS_SNAPSHOT_BOOTING}" = "xtrue" ] &&
-+   [ "x${GRUB_FS}" = "xbtrfs" ] ; then
-+    cat <<EOF
-+if [ -n "\$extra_cmdline" ]; then
-+  submenu "Bootable snapshot #\$snapshot_num" {
-+    menuentry "If OK, run 'snapper rollback \$snapshot_num' and reboot." { true; }
-+  }
-+fi
-+EOF
-+fi
+########@@ -356,3 +366,14 @@ fi
+######## if [ "x${GRUB_BADRAM}" != "x" ] ; then
+########   echo "badram ${GRUB_BADRAM}"
+######## fi
+########+
+########+if [ "x${SUSE_BTRFS_SNAPSHOT_BOOTING}" = "xtrue" ] &&
+########+   [ "x${GRUB_FS}" = "xbtrfs" ] ; then
+########+    cat <<EOF
+########+if [ -n "\$extra_cmdline" ]; then
+########+  submenu "Bootable snapshot #\$snapshot_num" {
+########+    menuentry "If OK, run 'snapper rollback \$snapshot_num' and reboot." { true; }
+########+  }
+########+fi
+########+EOF
+########+fi
 Index: grub-2.02~beta2/util/grub-mkconfig.in
 ===================================================================
 --- grub-2.02~beta2.orig/util/grub-mkconfig.in
