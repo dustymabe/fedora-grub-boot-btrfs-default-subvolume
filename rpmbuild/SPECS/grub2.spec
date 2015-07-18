@@ -222,6 +222,7 @@ Patch2001: grub2-btrfs-01-add-ability-to-boot-from-subvolumes.patch
 Patch2002: grub2-btrfs-02-export-subvolume-envvars.patch
 Patch2003: grub2-btrfs-03-follow_default.patch
 Patch2004: grub2-btrfs-04-grub2-install.patch
+Patch2005: grub2-btrfs-05-grub2-mkconfig.patch
 
 BuildRequires:  flex bison binutils python
 BuildRequires:  ncurses-devel xz-devel bzip2-devel
