@@ -3,9 +3,11 @@ Subject: grub2-btrfs-05-grub2-mkconfig.patch
 
 Add in grub2-btrfs-05-grub2-mkconfig.patch
 
+diff --git a/util/grub-mkconfig_lib.in b/util/grub-mkconfig_lib.in
+index 9c410ea..2fb4f4f 100644
 --- a/util/grub-mkconfig_lib.in
 +++ b/util/grub-mkconfig_lib.in
-@@ -49,7 +49,11 @@ grub_warn ()
+@@ -52,7 +52,11 @@ grub_warn ()
  
  make_system_path_relative_to_its_root ()
  {
@@ -17,11 +19,13 @@ Add in grub2-btrfs-05-grub2-mkconfig.patch
  }
  
  is_path_readable_by_grub ()
+diff --git a/util/grub.d/00_header.in b/util/grub.d/00_header.in
+index 858b526..e2a5330 100644
 --- a/util/grub.d/00_header.in
 +++ b/util/grub.d/00_header.in
 @@ -27,6 +27,14 @@ export TEXTDOMAINDIR="@localedir@"
  
- . "@datadir@/@PACKAGE@/grub-mkconfig_lib"
+ . "$pkgdatadir/grub-mkconfig_lib"
  
 +if [ "x${SUSE_BTRFS_SNAPSHOT_BOOTING}" = "xtrue" ] &&
 +   [ "x${GRUB_FS}" = "xbtrfs" ] ; then
@@ -34,18 +38,18 @@ Add in grub2-btrfs-05-grub2-mkconfig.patch
  # Do this as early as possible, since other commands might depend on it.
  # (e.g. the `loadfont' command might need lvm or raid modules)
  for i in ${GRUB_PRELOAD_MODULES} ; do
-@@ -43,7 +51,9 @@ if [ "x${GRUB_DEFAULT_BUTTON}" = "xsaved
- if [ "x${GRUB_TIMEOUT_BUTTON}" = "x" ] ; then GRUB_TIMEOUT_BUTTON="$GRUB_TIMEOUT" ; fi
- 
+@@ -45,7 +53,9 @@ if [ "x${GRUB_TIMEOUT_BUTTON}" = "x" ] ; then GRUB_TIMEOUT_BUTTON="$GRUB_TIMEOUT
  cat << EOF
+ set pager=1
+ 
 -if [ -s \$prefix/grubenv ]; then
 +if [ -f \${config_directory}/grubenv ]; then
 +  load_env -f \${config_directory}/grubenv
 +elif [ -s \$prefix/grubenv ]; then
    load_env
  fi
- 
-@@ -395,3 +405,15 @@ fi
+ EOF
+@@ -356,3 +366,15 @@ fi
  if [ "x${GRUB_BADRAM}" != "x" ] ; then
    echo "badram ${GRUB_BADRAM}"
  fi
@@ -61,21 +65,25 @@ Add in grub2-btrfs-05-grub2-mkconfig.patch
 +fi
 +EOF
 +fi
+diff --git a/util/grub-mkconfig.in b/util/grub-mkconfig.in
+index 73a18f7..e0e9184 100644
 --- a/util/grub-mkconfig.in
 +++ b/util/grub-mkconfig.in
-@@ -255,7 +255,8 @@ export GRUB_DEFAULT \
+@@ -236,7 +236,8 @@ export GRUB_DEFAULT \
+   GRUB_BADRAM \
    GRUB_OS_PROBER_SKIP_LIST \
    GRUB_DISABLE_SUBMENU \
-   GRUB_CMDLINE_LINUX_RECOVERY \
--  GRUB_USE_LINUXEFI
-+  GRUB_USE_LINUXEFI \
+-  GRUB_DEFAULT_DTB
++  GRUB_DEFAULT_DTB \
 +  SUSE_BTRFS_SNAPSHOT_BOOTING
  
  if test "x${grub_cfg}" != "x"; then
    rm -f "${grub_cfg}.new"
+diff --git a/util/grub.d/10_linux.in b/util/grub.d/10_linux.in
+index 1215241..73a9476 100644
 --- a/util/grub.d/10_linux.in
 +++ b/util/grub.d/10_linux.in
-@@ -57,10 +57,14 @@ fi
+@@ -56,10 +56,14 @@ fi
  
  case x"$GRUB_FS" in
      xbtrfs)
@@ -90,9 +98,11 @@ Add in grub2-btrfs-05-grub2-mkconfig.patch
  	fi;;
      xzfs)
  	rpool=`${grub_probe} --device ${GRUB_DEVICE} --target=fs_label 2>/dev/null || true`
+diff --git a/util/grub.d/20_linux_xen.in b/util/grub.d/20_linux_xen.in
+index 25e3c41..6cf0046 100644
 --- a/util/grub.d/20_linux_xen.in
 +++ b/util/grub.d/20_linux_xen.in
-@@ -71,10 +71,14 @@ fi
+@@ -63,10 +63,14 @@ fi
  
  case x"$GRUB_FS" in
      xbtrfs)
