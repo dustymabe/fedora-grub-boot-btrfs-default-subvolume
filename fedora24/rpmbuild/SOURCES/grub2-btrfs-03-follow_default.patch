@@ -1,3 +1,8 @@
+From: somebody@suse.com
+Subject: grub2-btrfs-03-follow_default.patch
+
+Add in grub2-btrfs-03-follow_default.patch
+
 Index: grub-2.02~beta2/grub-core/fs/btrfs.c
 ===================================================================
 --- grub-2.02~beta2.orig/grub-core/fs/btrfs.c
