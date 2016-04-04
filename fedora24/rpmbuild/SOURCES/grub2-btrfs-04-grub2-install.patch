@@ -3,11 +3,11 @@ Subject: grub2-btrfs-04-grub2-install.patch
 
 Add in grub2-btrfs-04-grub2-install.patch
 
-Index: grub-2.02~beta2/grub-core/osdep/unix/config.c
-===================================================================
---- grub-2.02~beta2.orig/grub-core/osdep/unix/config.c
-+++ grub-2.02~beta2/grub-core/osdep/unix/config.c
-@@ -215,6 +215,19 @@ grub_util_load_config (struct grub_util_
+diff --git a/grub-core/osdep/unix/config.c b/grub-core/osdep/unix/config.c
+index 65effa9..b637c58 100644
+--- a/grub-core/osdep/unix/config.c
++++ b/grub-core/osdep/unix/config.c
+@@ -82,6 +82,19 @@ grub_util_load_config (struct grub_util_config *cfg)
    if (v)
      cfg->grub_distributor = xstrdup (v);
  
@@ -27,21 +27,21 @@ Index: grub-2.02~beta2/grub-core/osdep/unix/config.c
    cfgfile = grub_util_get_config_filename ();
    if (!grub_util_is_regular (cfgfile))
      return;
-@@ -238,8 +251,8 @@ grub_util_load_config (struct grub_util_
+@@ -105,8 +118,8 @@ grub_util_load_config (struct grub_util_config *cfg)
        *ptr++ = *iptr;
      }
  
--  strcpy (ptr, "'; printf \"GRUB_ENABLE_CRYPTODISK=%s\\nGRUB_DISTRIBUTOR=%s\\n\", "
--	  "\"$GRUB_ENABLE_CRYPTODISK\", \"$GRUB_DISTRIBUTOR\"");
+-  strcpy (ptr, "'; printf \"GRUB_ENABLE_CRYPTODISK=%s\\nGRUB_DISTRIBUTOR=%s\\n\" "
+-	  "\"$GRUB_ENABLE_CRYPTODISK\" \"$GRUB_DISTRIBUTOR\"");
 +  strcpy (ptr, "'; printf \"GRUB_ENABLE_CRYPTODISK=%s\\nGRUB_DISTRIBUTOR=%s\\nSUSE_BTRFS_SNAPSHOT_BOOTING=%s\\n\" "
 +	  "\"$GRUB_ENABLE_CRYPTODISK\" \"$GRUB_DISTRIBUTOR\" \"$SUSE_BTRFS_SNAPSHOT_BOOTING\"");
  
    argv[2] = script;
    argv[3] = '\0';
-Index: grub-2.02~beta2/include/grub/emu/config.h
-===================================================================
---- grub-2.02~beta2.orig/include/grub/emu/config.h
-+++ grub-2.02~beta2/include/grub/emu/config.h
+diff --git a/include/grub/emu/config.h b/include/grub/emu/config.h
+index 875d589..c9a7e5f 100644
+--- a/include/grub/emu/config.h
++++ b/include/grub/emu/config.h
 @@ -37,6 +37,7 @@ struct grub_util_config
  {
    int is_cryptodisk_enabled;
@@ -50,11 +50,11 @@ Index: grub-2.02~beta2/include/grub/emu/config.h
  };
  
  void
-Index: grub-2.02~beta2/util/config.c
-===================================================================
---- grub-2.02~beta2.orig/util/config.c
-+++ grub-2.02~beta2/util/config.c
-@@ -42,6 +42,16 @@ grub_util_parse_config (FILE *f, struct
+diff --git a/util/config.c b/util/config.c
+index ebcdd8f..f044a88 100644
+--- a/util/config.c
++++ b/util/config.c
+@@ -42,6 +42,16 @@ grub_util_parse_config (FILE *f, struct grub_util_config *cfg, int simple)
  	    cfg->is_cryptodisk_enabled = 1;
  	  continue;
  	}
@@ -71,11 +71,11 @@ Index: grub-2.02~beta2/util/config.c
        if (grub_strncmp (ptr, "GRUB_DISTRIBUTOR=",
  			sizeof ("GRUB_DISTRIBUTOR=") - 1) == 0)
  	{
-Index: grub-2.02~beta2/util/grub-install.c
-===================================================================
---- grub-2.02~beta2.orig/util/grub-install.c
-+++ grub-2.02~beta2/util/grub-install.c
-@@ -816,6 +816,8 @@ fill_core_services (const char *core_ser
+diff --git a/util/grub-install.c b/util/grub-install.c
+index 6c89c2b..b174009 100644
+--- a/util/grub-install.c
++++ b/util/grub-install.c
+@@ -815,6 +815,8 @@ fill_core_services (const char *core_services)
    free (sysv_plist);
  }
  
@@ -84,9 +84,9 @@ Index: grub-2.02~beta2/util/grub-install.c
  int
  main (int argc, char *argv[])
  {
-@@ -858,6 +860,9 @@ main (int argc, char *argv[])
-     }
- #endif
+@@ -848,6 +850,9 @@ main (int argc, char *argv[])
+ 
+   grub_util_load_config (&config);
  
 +  if (config.is_suse_btrfs_snapshot_enabled)
 +    use_relative_path_on_btrfs = 1;
@@ -94,7 +94,7 @@ Index: grub-2.02~beta2/util/grub-install.c
    if (!bootloader_id && config.grub_distributor)
      {
        char *ptr;
-@@ -1343,6 +1348,16 @@ main (int argc, char *argv[])
+@@ -1318,6 +1323,16 @@ main (int argc, char *argv[])
        fprintf (load_cfg_f, "set debug='%s'\n",
  	      debug_image);
      }
@@ -111,19 +111,19 @@ Index: grub-2.02~beta2/util/grub-install.c
    char *prefix_drive = NULL;
    char *install_drive = NULL;
  
-Index: grub-2.02~beta2/grub-core/osdep/linux/getroot.c
-===================================================================
---- grub-2.02~beta2.orig/grub-core/osdep/linux/getroot.c
-+++ grub-2.02~beta2/grub-core/osdep/linux/getroot.c
-@@ -364,6 +364,7 @@ get_btrfs_fs_prefix (const char *mount_p
-   return ret;
+diff --git a/grub-core/osdep/linux/getroot.c b/grub-core/osdep/linux/getroot.c
+index 469923b..462661b 100644
+--- a/grub-core/osdep/linux/getroot.c
++++ b/grub-core/osdep/linux/getroot.c
+@@ -370,6 +370,7 @@ get_btrfs_fs_prefix (const char *mount_path)
+   return NULL;
  }
  
 +int use_relative_path_on_btrfs = 0;
  
  char **
  grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
-@@ -502,6 +503,12 @@ grub_find_root_devices_from_mountinfo (c
+@@ -508,6 +509,12 @@ grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
  	{
  	  ret = grub_find_root_devices_from_btrfs (dir);
  	  fs_prefix = get_btrfs_fs_prefix (entries[i].enc_path);
@@ -136,10 +136,10 @@ Index: grub-2.02~beta2/grub-core/osdep/linux/getroot.c
  	}
        if (!ret)
  	{
-Index: grub-2.02~beta2/util/grub-mkrelpath.c
-===================================================================
---- grub-2.02~beta2.orig/util/grub-mkrelpath.c
-+++ grub-2.02~beta2/util/grub-mkrelpath.c
+diff --git a/util/grub-mkrelpath.c b/util/grub-mkrelpath.c
+index 47a241a..5db7a9a 100644
+--- a/util/grub-mkrelpath.c
++++ b/util/grub-mkrelpath.c
 @@ -40,9 +40,12 @@ struct arguments
  };
  
@@ -153,7 +153,7 @@ Index: grub-2.02~beta2/util/grub-mkrelpath.c
  static error_t
  argp_parser (int key, char *arg, struct argp_state *state)
  {
-@@ -52,6 +55,9 @@ argp_parser (int key, char *arg, struct
+@@ -52,6 +55,9 @@ argp_parser (int key, char *arg, struct argp_state *state)
  
    switch (key)
      {
