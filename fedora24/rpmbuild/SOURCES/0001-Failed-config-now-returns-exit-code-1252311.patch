@@ -1,0 +1,28 @@
+From cdf2dc67eb5bd1e6497b901d449c9de1db1f2a3b Mon Sep 17 00:00:00 2001
+From: Robert Marshall <rmarshall@redhat.com>
+Date: Fri, 29 Jan 2016 14:49:24 -0500
+Subject: [PATCH 01/91] Failed config now returns exit code (#1252311)
+
+Grub would notify the user if the new config was invalid, however, it
+did not exit properly with exit code 1. Added the proper exit code.
+
+Resolves: rhbz#1252311
+---
+ util/grub-mkconfig.in | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/util/grub-mkconfig.in b/util/grub-mkconfig.in
+index 203b076..f8496d2 100644
+--- a/util/grub-mkconfig.in
++++ b/util/grub-mkconfig.in
+@@ -273,6 +273,7 @@ Ensure that there are no errors in /etc/default/grub
+ and /etc/grub.d/* files or please file a bug report with
+ %s file attached." "${grub_cfg}.new" >&2
+     echo >&2
++    exit 1
+   else
+     # none of the children aborted with error, install the new grub.cfg
+     mv -f ${grub_cfg}.new ${grub_cfg}
+-- 
+2.5.0
+

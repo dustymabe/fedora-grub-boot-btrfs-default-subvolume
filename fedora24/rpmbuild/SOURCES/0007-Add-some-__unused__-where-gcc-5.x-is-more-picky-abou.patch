@@ -1,0 +1,66 @@
+From b1dad9a073229e27ca370a45fd3e950fe08bb042 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Mon, 7 Mar 2016 13:15:22 -0500
+Subject: [PATCH 07/91] Add some __unused__ where gcc 5.x is more picky about
+ it.
+
+With some build flags, gcc 5.x throws more warnings about __unused__ not
+being present than older compilers did.  This patch adds the annotation.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ grub-core/gettext/gettext.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/grub-core/gettext/gettext.c b/grub-core/gettext/gettext.c
+index 4880cef..1b1986f 100644
+--- a/grub-core/gettext/gettext.c
++++ b/grub-core/gettext/gettext.c
+@@ -434,7 +434,7 @@ static char *
+ grub_gettext_env_write_lang (struct grub_env_var *var
+ 			     __attribute__ ((unused)), const char *val)
+ {
+-  grub_err_t err;
++  grub_err_t __attribute__((__unused__)) err;
+   err = grub_gettext_init_ext (&main_context, val, grub_env_get ("locale_dir"),
+ 			       grub_env_get ("prefix"));
+   if (err)
+@@ -451,7 +451,7 @@ grub_gettext_env_write_lang (struct grub_env_var *var
+ void
+ grub_gettext_reread_prefix (const char *val)
+ {
+-  grub_err_t err;
++  grub_err_t __attribute__((__unused__)) err;
+   err = grub_gettext_init_ext (&main_context, grub_env_get ("lang"), 
+ 			       grub_env_get ("locale_dir"),
+ 			       val);
+@@ -463,7 +463,7 @@ static char *
+ read_main (struct grub_env_var *var
+ 	   __attribute__ ((unused)), const char *val)
+ {
+-  grub_err_t err;
++  grub_err_t __attribute__((__unused__)) err;
+   err = grub_gettext_init_ext (&main_context, grub_env_get ("lang"), val,
+ 			       grub_env_get ("prefix"));
+   if (err)
+@@ -475,7 +475,7 @@ static char *
+ read_secondary (struct grub_env_var *var
+ 		__attribute__ ((unused)), const char *val)
+ {
+-  grub_err_t err;
++  grub_err_t __attribute__((__unused__)) err;
+   err = grub_gettext_init_ext (&secondary_context, grub_env_get ("lang"), val,
+ 			       0);
+   if (err)
+@@ -500,7 +500,7 @@ grub_cmd_translate (grub_command_t cmd __attribute__ ((unused)),
+ GRUB_MOD_INIT (gettext)
+ {
+   const char *lang;
+-  grub_err_t err;
++  grub_err_t __attribute__((__unused__)) err;
+ 
+   lang = grub_env_get ("lang");
+ 
+-- 
+2.5.0
+

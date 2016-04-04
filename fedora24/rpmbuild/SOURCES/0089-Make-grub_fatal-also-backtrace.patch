@@ -1,0 +1,40 @@
+From d3afb5dc6dac45cb9b868734a0b4df428ca0c259 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 27 Jan 2016 09:22:42 -0500
+Subject: [PATCH 89/91] Make grub_fatal() also backtrace.
+
+---
+ Makefile.util.def     | 3 +++
+ grub-core/kern/misc.c | 2 +-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile.util.def b/Makefile.util.def
+index a6d6f6f..fe8d4c9 100644
+--- a/Makefile.util.def
++++ b/Makefile.util.def
+@@ -49,6 +49,9 @@ library = {
+   common = grub-core/partmap/msdos.c;
+   common = grub-core/fs/proc.c;
+   common = grub-core/fs/archelp.c;
++
++  x86 = grub-core/lib/backtrace.c;
++  x86 = grub-core/lib/i386/backtrace.c;
+ };
+ 
+ library = {
+diff --git a/grub-core/kern/misc.c b/grub-core/kern/misc.c
+index d7dcd97..39688da 100644
+--- a/grub-core/kern/misc.c
++++ b/grub-core/kern/misc.c
+@@ -1116,7 +1116,7 @@ grub_fatal (const char *fmt, ...)
+   va_end (ap);
+ 
+   grub_refresh ();
+-
++  grub_backtrace();
+   grub_abort ();
+ }
+ 
+-- 
+2.5.0
+
