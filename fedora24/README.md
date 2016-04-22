@@ -46,8 +46,8 @@ Run the following commands from the root of the git repo to download software ne
 and to build the rpm on Fedora 24:
 
 ```
-dnf install yum-utils gcc rpm-build
-yum-builddep grub2
+dnf install gcc make rpm-build
+dnf builddep grub2
 rpmbuild -D "_topdir $(readlink -f ./)/rpmbuild" -ba ./rpmbuild/SPECS/grub2.spec
 ```
 
