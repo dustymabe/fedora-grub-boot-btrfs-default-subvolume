@@ -18,7 +18,6 @@ cdboot_test
 cmp_test
 config.cache
 config.guess
-config.h
 config-util.h
 config-util.h.in
 config.log
