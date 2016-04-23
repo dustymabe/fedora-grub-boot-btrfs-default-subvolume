@@ -1,21 +1,21 @@
-From 1e6e31350ba4b8444b960e3f0e77b50fe20dca03 Mon Sep 17 00:00:00 2001
+From 10da6e0e6bf723e99332fb1c34e6355a98bbb83f Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Fri, 5 Sep 2014 10:07:04 -0400
-Subject: [PATCH 09/91] Allow "fallback" to include entries by title, not just
+Subject: [PATCH 09/88] Allow "fallback" to include entries by title, not just
  number.
 
 Resolves: rhbz#1026084
 
 Signed-off-by: Peter Jones <pjones@redhat.com>
 ---
- grub-core/normal/menu.c | 76 +++++++++++++++++++++++++++++++------------------
- 1 file changed, 49 insertions(+), 27 deletions(-)
+ grub-core/normal/menu.c | 85 +++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 58 insertions(+), 27 deletions(-)
 
 diff --git a/grub-core/normal/menu.c b/grub-core/normal/menu.c
-index 719e2fb..4fecc28 100644
+index 719e2fb..2e8a7bd 100644
 --- a/grub-core/normal/menu.c
 +++ b/grub-core/normal/menu.c
-@@ -163,12 +163,35 @@ grub_menu_set_timeout (int timeout)
+@@ -163,16 +163,41 @@ grub_menu_set_timeout (int timeout)
      }
  }
  
@@ -28,7 +28,7 @@ index 719e2fb..4fecc28 100644
 +  while (1)
 +    {
 +      if (*ptr2 == '>' && ptr2[1] != '>' && *ptr1 == 0)
-+	return 1;
++	return ptr2 - spec;
 +      if (*ptr2 == '>' && ptr2[1] != '>')
 +	return 0;
 +      if (*ptr2 == '>')
@@ -36,10 +36,11 @@ index 719e2fb..4fecc28 100644
 +      if (*ptr1 != *ptr2)
 +	return 0;
 +      if (*ptr1 == 0)
-+	return 1;
++	return ptr1 - id;
 +      ptr1++;
 +      ptr2++;
 +    }
++  return 0;
 +}
 +
  /* Get the first entry number from the value of the environment variable NAME,
@@ -52,7 +53,12 @@ index 719e2fb..4fecc28 100644
  {
    const char *val;
    char *tail;
-@@ -182,9 +205,32 @@ get_and_remove_first_entry_number (const char *name)
+   int entry;
++  int sz = 0;
+ 
+   val = grub_env_get (name);
+   if (! val)
+@@ -182,9 +207,39 @@ get_and_remove_first_entry_number (const char *name)
  
    entry = (int) grub_strtoul (val, &tail, 0);
  
@@ -62,18 +68,22 @@ index 719e2fb..4fecc28 100644
 +      grub_menu_entry_t e = menu->entry_list;
 +      int i;
 +
-+      grub_errno = GRUB_ERR_NONE;
-+
 +      for (i = 0; e; i++)
 +	{
-+	  if (menuentry_eq (e->title, val)
-+	      || menuentry_eq (e->id, val))
++	  sz = menuentry_eq (e->title, val);
++	  if (sz < 1)
++	    sz = menuentry_eq (e->id, val);
++
++	  if (sz >= 1)
 +	    {
 +	      entry = i;
 +	      break;
 +	    }
 +	  e = e->next;
 +	}
++
++      if (sz > 0)
++	grub_errno = GRUB_ERR_NONE;
 +
 +      if (! e)
 +	entry = -1;
@@ -82,11 +92,14 @@ index 719e2fb..4fecc28 100644
    if (grub_errno == GRUB_ERR_NONE)
      {
 -      /* Skip whitespace to find the next digit.  */
++      if (sz > 0)
++	tail += sz;
++
 +      /* Skip whitespace to find the next entry.  */
        while (*tail && grub_isspace (*tail))
  	tail++;
        grub_env_set (name, tail);
-@@ -347,7 +393,7 @@ grub_menu_execute_with_fallback (grub_menu_t menu,
+@@ -347,7 +402,7 @@ grub_menu_execute_with_fallback (grub_menu_t menu,
    grub_menu_execute_entry (entry, 1);
  
    /* Deal with fallback entries.  */
@@ -95,7 +108,7 @@ index 719e2fb..4fecc28 100644
  	 >= 0)
      {
        grub_print_error ();
-@@ -465,30 +511,6 @@ grub_menu_register_viewer (struct grub_menu_viewer *viewer)
+@@ -465,30 +520,6 @@ grub_menu_register_viewer (struct grub_menu_viewer *viewer)
    viewers = viewer;
  }
  
@@ -127,5 +140,5 @@ index 719e2fb..4fecc28 100644
  static int
  get_entry_number (grub_menu_t menu, const char *name)
 -- 
-2.5.0
+2.5.5
 

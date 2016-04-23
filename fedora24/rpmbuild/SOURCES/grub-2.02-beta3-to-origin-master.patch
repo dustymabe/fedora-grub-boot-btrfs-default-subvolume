@@ -2,6 +2,19 @@ From: Peter Jones <pjones@redhat.com>
 Date:  Wed Jul 22 10:18:00 2015 -0400
 Subject: Stop trying to "git format-patch" across a merge that confuses it
 
+diff --git a/Makefile.util.def b/Makefile.util.def
+index ed9b4c697dae038655ca7740f59285bd9044709b..f9caccb9780ffe8d4b31c8a19399ba7bbd308e56 100644
+--- a/Makefile.util.def
++++ b/Makefile.util.def
+@@ -416,7 +416,7 @@ program = {
+   ldadd = libgrubgcry.a;
+   ldadd = libgrubkern.a;
+   ldadd = grub-core/gnulib/libgnu.a;
+-  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
++  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBUTIL) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+ };
+ 
+ data = {
 diff --git a/NEWS b/NEWS
 index c9a975219fcc24162858e461f439886c4cb3841e..572eadb3ef27138481e91643b8bb60d27ce867c8 100644
 --- a/NEWS
@@ -52,6 +65,145 @@ index c9a975219fcc24162858e461f439886c4cb3841e..572eadb3ef27138481e91643b8bb60d2
  
  * Revision control moved to git.
  
+diff --git a/configure.ac b/configure.ac
+index a85b134ec58296e4f128b116918cb1c64ee17ecc..57e17138eb72aa4d4f985c525998d300f7121ccd 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1185,9 +1185,9 @@ CFLAGS="$TARGET_CFLAGS"
+ # Position independent executable.
+ grub_CHECK_PIE
+ [# Need that, because some distributions ship compilers that include
+-# `-fPIE' in the default specs.
++# `-fPIE' or '-fpie' in the default specs.
+ if [ x"$pie_possible" = xyes ]; then
+-  TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIE"
++  TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIE -fno-pie"
+ fi]
+ 
+ CFLAGS="$TARGET_CFLAGS"
+diff --git a/grub-core/fs/iso9660.c b/grub-core/fs/iso9660.c
+index 67a67cf40dae4c00355bc4e93d32d449c45ff4c2..c9c8374bf614b4e39b5e57fd813e4e587e256679 100644
+--- a/grub-core/fs/iso9660.c
++++ b/grub-core/fs/iso9660.c
+@@ -750,19 +750,15 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
+ 
+         if (dir->data->joliet && !ctx.filename)
+           {
+-            char *oldname, *semicolon;
++            char *semicolon;
+ 
+-            oldname = name;
+             ctx.filename = grub_iso9660_convert_string
+-                  ((grub_uint8_t *) oldname, dirent.namelen >> 1);
++                  ((grub_uint8_t *) name, dirent.namelen >> 1);
+ 
+ 	    semicolon = grub_strrchr (ctx.filename, ';');
+ 	    if (semicolon)
+ 	      *semicolon = '\0';
+ 
+-            if (ctx.filename_alloc)
+-              grub_free (oldname);
+-
+             ctx.filename_alloc = 1;
+           }
+ 
+diff --git a/grub-core/loader/i386/xen_file.c b/grub-core/loader/i386/xen_file.c
+index 5836218909876dc3c1bfd5e8ad0239d4b8edb7c8..37f9ad8ac008cdff4f36a2dc6b2083bd55fdf90f 100644
+--- a/grub-core/loader/i386/xen_file.c
++++ b/grub-core/loader/i386/xen_file.c
+@@ -55,11 +55,11 @@ grub_xen_file (grub_file_t file)
+   grub_dprintf ("xen", "found bzimage payload 0x%llx-0x%llx\n",
+ 		(unsigned long long) (lh.setup_sects + 1) * 512
+ 		+ lh.payload_offset,
+-		(unsigned long long) lh.payload_length - 4);
++		(unsigned long long) lh.payload_length);
+ 
+   off_file = grub_file_offset_open (file, (lh.setup_sects + 1) * 512
+ 				    + lh.payload_offset,
+-				    lh.payload_length - 4);
++				    lh.payload_length);
+   if (!off_file)
+     goto fail;
+ 
+diff --git a/grub-core/net/bootp.c b/grub-core/net/bootp.c
+index a088244b4cb1ce9f21d02c1f3024a99e681ccb1a..189551a483ab9413cdca27650b20267268fa724a 100644
+--- a/grub-core/net/bootp.c
++++ b/grub-core/net/bootp.c
+@@ -157,6 +157,9 @@ grub_net_configure_by_dhcp_ack (const char *name,
+   hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
+ 
+   inter = grub_net_add_addr (name, card, &addr, &hwaddr, flags);
++  if (!inter)
++    return 0;
++
+ #if 0
+   /* This is likely based on misunderstanding. gateway_ip refers to
+      address of BOOTP relay and should not be used after BOOTP transaction
+@@ -368,6 +371,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
+ 
+   if (grub_strcmp (args[3], "string") == 0)
+     {
++      grub_err_t err = GRUB_ERR_NONE;
+       char *val = grub_malloc (taglength + 1);
+       if (!val)
+ 	return grub_errno;
+@@ -376,8 +380,9 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
+       if (args[0][0] == '-' && args[0][1] == 0)
+ 	grub_printf ("%s\n", val);
+       else
+-	return grub_env_set (args[0], val);
+-      return GRUB_ERR_NONE;
++	err = grub_env_set (args[0], val);
++      grub_free (val);
++      return err;
+     }
+ 
+   if (grub_strcmp (args[3], "number") == 0)
+@@ -399,6 +404,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
+ 
+   if (grub_strcmp (args[3], "hex") == 0)
+     {
++      grub_err_t err = GRUB_ERR_NONE;
+       char *val = grub_malloc (2 * taglength + 1);
+       int i;
+       if (!val)
+@@ -412,8 +418,9 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
+       if (args[0][0] == '-' && args[0][1] == 0)
+ 	grub_printf ("%s\n", val);
+       else
+-	return grub_env_set (args[0], val);
+-      return GRUB_ERR_NONE;
++	err = grub_env_set (args[0], val);
++      grub_free (val);
++      return err;
+     }
+ 
+   return grub_error (GRUB_ERR_BAD_ARGUMENT,
+diff --git a/include/multiboot2.h b/include/multiboot2.h
+index 9d4862759af38eb5a9d0fecb1807ef50ba791dee..8b8c1568ae32239d73ad80a3ca64010556d57099 100644
+--- a/include/multiboot2.h
++++ b/include/multiboot2.h
+@@ -176,7 +176,7 @@ struct multiboot_mmap_entry
+ #define MULTIBOOT_MEMORY_BADRAM                 5
+   multiboot_uint32_t type;
+   multiboot_uint32_t zero;
+-} GRUB_PACKED;
++};
+ typedef struct multiboot_mmap_entry multiboot_memory_map_t;
+ 
+ struct multiboot_tag
+diff --git a/util/grub-mkconfig.in b/util/grub-mkconfig.in
+index 203b076966c0f5ef80eb93e7aebd01848a7c73b9..f8496d28bdf7f4bcbc2413888330834c1e252a64 100644
+--- a/util/grub-mkconfig.in
++++ b/util/grub-mkconfig.in
+@@ -273,6 +273,7 @@ Ensure that there are no errors in /etc/default/grub
+ and /etc/grub.d/* files or please file a bug report with
+ %s file attached." "${grub_cfg}.new" >&2
+     echo >&2
++    exit 1
+   else
+     # none of the children aborted with error, install the new grub.cfg
+     mv -f ${grub_cfg}.new ${grub_cfg}
 diff --git a/util/grub.d/10_linux.in b/util/grub.d/10_linux.in
 index 5a78513aeae0f6ad866c057564862bda7198a00c..de9044c7f28611d56358f581ac52ca2d2b7fc982 100644
 --- a/util/grub.d/10_linux.in

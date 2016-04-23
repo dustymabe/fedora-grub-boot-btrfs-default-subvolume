@@ -45,7 +45,7 @@
 Name:           grub2
 Epoch:          100
 Version:        2.02
-Release:        0.26%{?dist}.dusty
+Release:        0.28%{?dist}.dusty
 Summary:        Bootloader with support for Linux, Multiboot and more
 
 Group:          System Environment/Base
@@ -550,6 +550,13 @@ fi
 %{_datarootdir}/grub/themes/starfield
 
 %changelog
+* Tue Apr 05 2016 pjones <pjones@redhat.com> - 1:2.02-0.27
+- Pull TPM updates from mjg59.
+  Resolves: rhbz#1318067
+
+* Tue Mar 08 2016 pjones <pjones@redhat.com> - 1:2.02-0.27
+- Fix aarch64 build problem.
+
 * Fri Mar 04 2016 Peter Jones <pjones@redhat.com> - 2.02-0.26
 - Rebased to newer upstream (grub-2.02-beta3) for fedora-24
 

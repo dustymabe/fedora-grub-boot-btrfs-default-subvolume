@@ -1,0 +1,31 @@
+From a9c95bf3bb50ee171c80e9fe643da618afa8fdf9 Mon Sep 17 00:00:00 2001
+From: Matthew Garrett <mjg59@coreos.com>
+Date: Wed, 23 Mar 2016 16:49:42 -0700
+Subject: [PATCH 86/88] Fix boot when there's no TPM
+
+If the firmware has TPM support but has no TPM, we're jumping to core.img
+without popping the registers back onto the stack. Fix that.
+
+(cherry picked from commit c2eee36ec08f8ed0cd25b8030276347680be4843)
+---
+ grub-core/boot/i386/pc/boot.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/grub-core/boot/i386/pc/boot.S b/grub-core/boot/i386/pc/boot.S
+index c1df86d..acab373 100644
+--- a/grub-core/boot/i386/pc/boot.S
++++ b/grub-core/boot/i386/pc/boot.S
+@@ -473,9 +473,9 @@ LOCAL(copy_buffer):
+ 	movl	$0x8, %edx		/* PCR 8 */
+ 	int	$0x1A
+ 
++boot:
+ 	popa
+ #endif
+-boot:
+ 	/* boot kernel */
+ 	jmp	*(LOCAL(kernel_address))
+ 
+-- 
+2.5.5
+
