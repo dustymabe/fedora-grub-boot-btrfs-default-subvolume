@@ -7,7 +7,7 @@ Index: grub-2.02~beta2/grub-core/osdep/unix/config.c
 ===================================================================
 --- grub-2.02~beta2.orig/grub-core/osdep/unix/config.c
 +++ grub-2.02~beta2/grub-core/osdep/unix/config.c
-@@ -215,6 +215,19 @@ grub_util_load_config (struct grub_util_
+@@ -82,6 +82,19 @@ grub_util_load_config (struct grub_util_
    if (v)
      cfg->grub_distributor = xstrdup (v);
  
@@ -27,12 +27,12 @@ Index: grub-2.02~beta2/grub-core/osdep/unix/config.c
    cfgfile = grub_util_get_config_filename ();
    if (!grub_util_is_regular (cfgfile))
      return;
-@@ -238,8 +251,8 @@ grub_util_load_config (struct grub_util_
+@@ -105,8 +118,8 @@ grub_util_load_config (struct grub_util_
        *ptr++ = *iptr;
      }
  
--  strcpy (ptr, "'; printf \"GRUB_ENABLE_CRYPTODISK=%s\\nGRUB_DISTRIBUTOR=%s\\n\", "
--	  "\"$GRUB_ENABLE_CRYPTODISK\", \"$GRUB_DISTRIBUTOR\"");
+-  strcpy (ptr, "'; printf \"GRUB_ENABLE_CRYPTODISK=%s\\nGRUB_DISTRIBUTOR=%s\\n\" "
+-	  "\"$GRUB_ENABLE_CRYPTODISK\" \"$GRUB_DISTRIBUTOR\"");
 +  strcpy (ptr, "'; printf \"GRUB_ENABLE_CRYPTODISK=%s\\nGRUB_DISTRIBUTOR=%s\\nSUSE_BTRFS_SNAPSHOT_BOOTING=%s\\n\" "
 +	  "\"$GRUB_ENABLE_CRYPTODISK\" \"$GRUB_DISTRIBUTOR\" \"$SUSE_BTRFS_SNAPSHOT_BOOTING\"");
  
@@ -75,7 +75,7 @@ Index: grub-2.02~beta2/util/grub-install.c
 ===================================================================
 --- grub-2.02~beta2.orig/util/grub-install.c
 +++ grub-2.02~beta2/util/grub-install.c
-@@ -816,6 +816,8 @@ fill_core_services (const char *core_ser
+@@ -815,6 +815,8 @@ fill_core_services (const char *core_ser
    free (sysv_plist);
  }
  
@@ -84,9 +84,9 @@ Index: grub-2.02~beta2/util/grub-install.c
  int
  main (int argc, char *argv[])
  {
-@@ -858,6 +860,9 @@ main (int argc, char *argv[])
-     }
- #endif
+@@ -848,6 +850,9 @@ main (int argc, char *argv[])
+ 
+   grub_util_load_config (&config);
  
 +  if (config.is_suse_btrfs_snapshot_enabled)
 +    use_relative_path_on_btrfs = 1;
@@ -94,7 +94,7 @@ Index: grub-2.02~beta2/util/grub-install.c
    if (!bootloader_id && config.grub_distributor)
      {
        char *ptr;
-@@ -1343,6 +1348,16 @@ main (int argc, char *argv[])
+@@ -1318,6 +1323,16 @@ main (int argc, char *argv[])
        fprintf (load_cfg_f, "set debug='%s'\n",
  	      debug_image);
      }
@@ -115,15 +115,15 @@ Index: grub-2.02~beta2/grub-core/osdep/linux/getroot.c
 ===================================================================
 --- grub-2.02~beta2.orig/grub-core/osdep/linux/getroot.c
 +++ grub-2.02~beta2/grub-core/osdep/linux/getroot.c
-@@ -364,6 +364,7 @@ get_btrfs_fs_prefix (const char *mount_p
-   return ret;
+@@ -376,6 +376,7 @@ get_btrfs_fs_prefix (const char *mount_p
+   return NULL;
  }
  
 +int use_relative_path_on_btrfs = 0;
  
  char **
  grub_find_root_devices_from_mountinfo (const char *dir, char **relroot)
-@@ -502,6 +503,12 @@ grub_find_root_devices_from_mountinfo (c
+@@ -514,6 +515,12 @@ grub_find_root_devices_from_mountinfo (c
  	{
  	  ret = grub_find_root_devices_from_btrfs (dir);
  	  fs_prefix = get_btrfs_fs_prefix (entries[i].enc_path);
