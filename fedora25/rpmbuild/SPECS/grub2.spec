@@ -71,6 +71,13 @@ Patch10002: 10002-Make-it-possible-to-enabled-build-id-sha1.patch
 Patch10004: 10004-Add-grub_qdprintf-grub_dprintf-without-the-file-lin.patch
 Patch10005: 10005-Make-a-gdb-dprintf-that-tells-us-load-addresses.patch
 #Patch10006: 10006-Try-it-in-gentpl-again.patch
+# Add in SUSE grub patches
+Patch20001: grub2-btrfs-01-add-ability-to-boot-from-subvolumes.patch
+Patch20002: grub2-btrfs-02-export-subvolume-envvars.patch
+Patch20003: grub2-btrfs-03-follow_default.patch
+Patch20004: grub2-btrfs-04-grub2-install.patch
+Patch20005: grub2-btrfs-05-grub2-mkconfig.patch
+
 
 BuildRequires:  flex bison binutils python
 BuildRequires:  ncurses-devel xz-devel bzip2-devel
