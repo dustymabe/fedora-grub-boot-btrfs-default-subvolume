@@ -43,9 +43,9 @@
 %undefine _missing_build_ids_terminate_build
 
 Name:           grub2
-Epoch:          1
+Epoch:          100
 Version:        2.02
-Release:        0.38%{?dist}
+Release:        0.38%{?dist}.dusty
 Summary:        Bootloader with support for Linux, Multiboot and more
 
 Group:          System Environment/Base
