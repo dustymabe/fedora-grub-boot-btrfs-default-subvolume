@@ -1,0 +1,25 @@
+From 0a3a4d0b69b5d68f3e4b6b74fe2e6b5d4dcace4f Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Tue, 14 Jun 2016 09:50:25 -0400
+Subject: [PATCH 84/90] linuxefi: fix double free on verification failure.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ grub-core/loader/i386/efi/linux.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/grub-core/loader/i386/efi/linux.c b/grub-core/loader/i386/efi/linux.c
+index 82f75b7..010bf98 100644
+--- a/grub-core/loader/i386/efi/linux.c
++++ b/grub-core/loader/i386/efi/linux.c
+@@ -191,7 +191,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
+     {
+       grub_error (GRUB_ERR_INVALID_COMMAND, N_("%s has invalid signature"),
+ 		  argv[0]);
+-      grub_free (kernel);
+       goto fail;
+     }
+ 
+-- 
+2.9.3
+
