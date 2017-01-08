@@ -15,7 +15,7 @@ diff --git a/.gitignore b/.gitignore
 index 18ab8e8..06c9f3a 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -1,93 +1,154 @@
+@@ -1,92 +1,153 @@
 -00_header
 -10_*
 -20_linux_xen
@@ -70,7 +70,6 @@ index 18ab8e8..06c9f3a 100644
 +config-util.h.in
  config.cache
  config.guess
- config.h
 -config-util.h
 -config-util.h.in
  config.log
@@ -214,7 +213,7 @@ index 18ab8e8..06c9f3a 100644
  grub_script_check_init.c
  grub_script_check_init.h
  grub_script_comments
-@@ -113,136 +174,50 @@ grub_script_strcmp
+@@ -112,136 +173,50 @@ grub_script_strcmp
  grub_script_test
  grub_script_vars1
  grub_script_while1
