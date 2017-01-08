@@ -1,3 +1,8 @@
+From: somebody@suse.com
+Subject: grub2-btrfs-04-grub2-install.patch
+
+Add in grub2-btrfs-04-grub2-install.patch
+
 Index: grub-2.02~beta2/grub-core/osdep/unix/config.c
 ===================================================================
 --- grub-2.02~beta2.orig/grub-core/osdep/unix/config.c
