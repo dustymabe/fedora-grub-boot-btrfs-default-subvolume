@@ -45,6 +45,10 @@ Building
 Run the following commands from the root of the git repo to download software needed 
 and to build the rpm on Fedora 25:
 
+*NOTE*: Do NOT run the rpmbuild where your rpmbuild dir is network
+        attached over sshfs. For some reason the patches weren't
+        applying cleanly when I was doing that.
+
 ```
 dnf install gcc make rpm-build
 dnf builddep grub2
