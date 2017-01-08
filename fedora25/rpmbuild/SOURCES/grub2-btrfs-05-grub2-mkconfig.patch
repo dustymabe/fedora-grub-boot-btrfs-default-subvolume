@@ -1,10 +1,7 @@
----
- util/grub-mkconfig.in       |    3 ++-
- util/grub-mkconfig_lib.in   |    4 ++++
- util/grub.d/00_header.in    |   24 +++++++++++++++++++++++-
- util/grub.d/10_linux.in     |   11 ++++++++++-
- util/grub.d/20_linux_xen.in |    4 ++++
- 5 files changed, 43 insertions(+), 3 deletions(-)
+From: somebody@suse.com
+Subject: grub2-btrfs-05-grub2-mkconfig.patch
+
+Add in grub2-btrfs-05-grub2-mkconfig.patch
 
 --- a/util/grub-mkconfig_lib.in
 +++ b/util/grub-mkconfig_lib.in
